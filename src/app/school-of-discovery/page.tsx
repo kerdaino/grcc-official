@@ -6,6 +6,64 @@ import { useState } from "react";
 export default function SchoolOfDiscoveryPage() {
   const [submitted, setSubmitted] = useState(false);
 
+  // Frontend-only form state (backend later)
+  const [form, setForm] = useState({
+    fullName: "",
+    addressOrCountry: "",
+    dateOfBirth: "",
+    salvationExperience: "",
+    churchAttending: "",
+    hasSpiritualCovering: "",
+    isWorker: "",
+    expectation: "",
+    attendedBibleSchoolBefore: "",
+    discipleshipInfo: "",
+    email: "",
+  });
+
+  function updateField(key: keyof typeof form, value: string) {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
+
+  if (!form.fullName || !form.addressOrCountry || !form.dateOfBirth || !form.email) {
+    alert("Please fill Name, Address/Country, and Date of Birth.");
+    return;
+  }
+
+  const payload = {
+    name: form.fullName,
+    address: form.addressOrCountry,
+    date_of_birth: form.dateOfBirth,
+    salvation_experience: form.salvationExperience,
+    church_attending: form.churchAttending,
+    spiritual_covering: form.hasSpiritualCovering,
+    is_worker: form.isWorker,
+    expectation: form.expectation,
+    attended_bible_school: form.attendedBibleSchoolBefore,
+    disciple_of: form.discipleshipInfo,
+    email: form.email,
+  };
+
+  const res = await fetch("/api/school-of-discovery", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.ok) {
+    alert(data?.message || "Submission failed. Please try again.");
+    return;
+  }
+
+  setSubmitted(true);
+}
+
+
   return (
     <main>
       <PageHero
@@ -67,25 +125,167 @@ export default function SchoolOfDiscoveryPage() {
               </div>
             ) : null}
 
-            <form className="mt-6 space-y-4">
-              <input className="w-full rounded-lg border px-4 py-3" placeholder="Full Name" />
-              <input className="w-full rounded-lg border px-4 py-3" placeholder="Email Address" type="email" />
-              <input className="w-full rounded-lg border px-4 py-3" placeholder="Phone Number / WhatsApp" />
-              <input className="w-full rounded-lg border px-4 py-3" placeholder="Address" />
-              <select className="w-full rounded-lg border px-4 py-3">
-                <option>Choose Class Type</option>
-                <option>Physical</option>
-                <option>Online</option>
-              </select>
-              <textarea className="w-full rounded-lg border px-4 py-3 min-h-[120px]" placeholder="Why do you want to join?" />
+            <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-900">
+                  Name <span className="text-red-600">*</span>
+                </label>
+                <input
+                  value={form.fullName}
+                  onChange={(e) => updateField("fullName", e.target.value)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400"
+                  placeholder="Full name"
+                />
+              </div>
+              <div>
+               <label className="block text-sm font-semibold text-slate-900">
+                  Email Address <span className="text-red-600">*</span>
+                </label> 
+              <input
+  value={form.email}
+  onChange={(e) => updateField("email", e.target.value)}
+  className="mt-2 w-full rounded-lg border px-4 py-3"
+  placeholder="Email Address"
+  type="email"
+/>
+</div>
+              {/* Address or Country */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-900">
+                  Address or Country <span className="text-red-600">*</span>
+                </label>
+                <input
+                  value={form.addressOrCountry}
+                  onChange={(e) => updateField("addressOrCountry", e.target.value)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400"
+                  placeholder="Your address or country"
+                />
+              </div>
+
+              {/* Date of birth */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-900">
+                  Date of Birth <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={form.dateOfBirth}
+                  onChange={(e) => updateField("dateOfBirth", e.target.value)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400"
+                />
+              </div>
+
+              {/* Salvation experience */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-900">
+                  Salvation Experience
+                </label>
+                <textarea
+                  value={form.salvationExperience}
+                  onChange={(e) => updateField("salvationExperience", e.target.value)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 min-h-[110px]"
+                  placeholder="Briefly share your salvation experience..."
+                />
+              </div>
+
+              {/* Church attending */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-900">
+                  Church Attending
+                </label>
+                <input
+                  value={form.churchAttending}
+                  onChange={(e) => updateField("churchAttending", e.target.value)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400"
+                  placeholder="Name of your church"
+                />
+              </div>
+
+              {/* Spiritual covering */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-900">
+                  Do you have spiritual covering?
+                </label>
+                <select
+                  value={form.hasSpiritualCovering}
+                  onChange={(e) => updateField("hasSpiritualCovering", e.target.value)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 bg-white"
+                >
+                  <option value="">Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
+              {/* Worker */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-900">
+                  Are you a worker in your place of worship?
+                </label>
+                <select
+                  value={form.isWorker}
+                  onChange={(e) => updateField("isWorker", e.target.value)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 bg-white"
+                >
+                  <option value="">Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
+              {/* Expectation */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-900">
+                  What is your expectation?
+                </label>
+                <textarea
+                  value={form.expectation}
+                  onChange={(e) => updateField("expectation", e.target.value)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 min-h-[110px]"
+                  placeholder="What do you expect from School of Discovery?"
+                />
+              </div>
+
+              {/* Have you attended any theological/bible/disciple school before */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-900">
+                  Have you attended any theological, bible, or discipleship school before?
+                </label>
+                <select
+                  value={form.attendedBibleSchoolBefore}
+                  onChange={(e) => updateField("attendedBibleSchoolBefore", e.target.value)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 bg-white"
+                >
+                  <option value="">Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
+              {/* Who is a disciple */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-900">
+                  Who is a disciple?
+                </label>
+                <textarea
+                  value={form.discipleshipInfo}
+                  onChange={(e) => updateField("discipleshipInfo", e.target.value)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 min-h-[110px]"
+                  placeholder="In your understanding, who is a disciple?"
+                />
+              </div>
 
               <button
-                type="button"
-                onClick={() => setSubmitted(true)}
+                type="submit"
                 className="w-full rounded-lg bg-purple-600 px-5 py-3 text-white font-semibold hover:bg-purple-700"
               >
                 Submit Registration
               </button>
+
+              <p className="text-xs text-slate-500">
+                Note: This is frontend-only for now. Backend will be connected later for emails + admission status.
+              </p>
             </form>
           </div>
         </div>
