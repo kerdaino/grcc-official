@@ -165,14 +165,6 @@ export default function Navbar() {
                   </Link>
                 );
               })}
-
-              {/* Give button on mobile (since desktop hides it on tiny screens) */}
-              <Link
-                href="/giving"
-                className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-fuchsia-600 px-5 py-3 text-white font-semibold text-sm hover:bg-fuchsia-700"
-              >
-                Give
-              </Link>
             </div>
           </div>
         ) : null}
