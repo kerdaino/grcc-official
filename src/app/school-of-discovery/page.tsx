@@ -6,6 +6,7 @@ import { useState } from "react";
 export default function SchoolOfDiscoveryPage() {
   const [submitted, setSubmitted] = useState(false);
 const [loading, setLoading] = useState(false);
+const [error, setError] = useState<string>("");
 
   // Frontend-only form state (backend later)
   const [form, setForm] = useState({
@@ -28,44 +29,67 @@ const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
   e.preventDefault();
+  if (loading) return; // prevent double clicks
+
+  setError("");
 
   if (!form.fullName || !form.addressOrCountry || !form.dateOfBirth || !form.email) {
-    alert("Please fill all required fields.");
+    setError("Please fill all required fields (Name, Email, Address/Country, Date of Birth).");
     return;
   }
 
   setLoading(true);
 
   const payload = {
-    name: form.fullName,
-    address: form.addressOrCountry,
+    name: form.fullName.trim(),
+    address: form.addressOrCountry.trim(),
     date_of_birth: form.dateOfBirth,
-    salvation_experience: form.salvationExperience,
-    church_attending: form.churchAttending,
+    salvation_experience: form.salvationExperience?.trim(),
+    church_attending: form.churchAttending?.trim(),
     spiritual_covering: form.hasSpiritualCovering,
     is_worker: form.isWorker,
-    expectation: form.expectation,
+    expectation: form.expectation?.trim(),
     attended_bible_school: form.attendedBibleSchoolBefore,
-    disciple_of: form.discipleshipInfo,
-    email: form.email,
+    disciple_of: form.discipleshipInfo?.trim(),
+    email: form.email.trim(),
   };
 
-  const res = await fetch("/api/school-of-discovery", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const res = await fetch("/api/school-of-discovery", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-  const data = await res.json();
+    const data = await res.json().catch(() => null);
 
-  setLoading(false);
+    if (!res.ok || !data?.ok) {
+      setError(data?.message || "Submission failed. Please try again.");
+      setLoading(false);
+      return;
+    }
 
-  if (!res.ok || !data.ok) {
-    alert(data?.message || "Submission failed.");
-    return;
+    setSubmitted(true);
+
+    // Clear the form after successful submit
+    setForm({
+      fullName: "",
+      addressOrCountry: "",
+      dateOfBirth: "",
+      salvationExperience: "",
+      churchAttending: "",
+      hasSpiritualCovering: "",
+      isWorker: "",
+      expectation: "",
+      attendedBibleSchoolBefore: "",
+      discipleshipInfo: "",
+      email: "",
+    });
+  } catch {
+    setError("Network error. Please check your connection and try again.");
+  } finally {
+    setLoading(false);
   }
-
-  setSubmitted(true);
 }
 
 
@@ -112,15 +136,20 @@ const [loading, setLoading] = useState(false);
               Register Now
             </h3>
 
-            {submitted ? (
-              <div className="mt-6 rounded-xl border border-teal-200 bg-teal-50 p-5 text-teal-900">
-                ✅ Your application has been submitted successfully.
+            {error ? (
+  <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+    {error}
+  </div>
+) : null}
 
-<p className="mt-2 text-sm text-teal-900/90">
-  Please check your email for confirmation. Our team will review your application and notify you of your admission status.
-</p>
-              </div>
-            ) : null}
+            {submitted ? (
+  <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
+    ✅ Your application has been submitted successfully.
+    <p className="mt-2 text-sm text-emerald-900/90">
+      Please check your email for confirmation. Our team will review your application and notify you of your admission status.
+    </p>
+  </div>
+) : null}
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-5">
               {/* Name */}
