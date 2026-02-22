@@ -5,6 +5,7 @@ import { useState } from "react";
 
 export default function SchoolOfDiscoveryPage() {
   const [submitted, setSubmitted] = useState(false);
+const [loading, setLoading] = useState(false);
 
   // Frontend-only form state (backend later)
   const [form, setForm] = useState({
@@ -29,9 +30,11 @@ export default function SchoolOfDiscoveryPage() {
   e.preventDefault();
 
   if (!form.fullName || !form.addressOrCountry || !form.dateOfBirth || !form.email) {
-    alert("Please fill Name, Address/Country, and Date of Birth.");
+    alert("Please fill all required fields.");
     return;
   }
+
+  setLoading(true);
 
   const payload = {
     name: form.fullName,
@@ -55,8 +58,10 @@ export default function SchoolOfDiscoveryPage() {
 
   const data = await res.json();
 
+  setLoading(false);
+
   if (!res.ok || !data.ok) {
-    alert(data?.message || "Submission failed. Please try again.");
+    alert(data?.message || "Submission failed.");
     return;
   }
 
@@ -99,15 +104,6 @@ export default function SchoolOfDiscoveryPage() {
                 You will later receive admission status (admitted / not admitted).
               </li>
             </ul>
-
-            <div className="mt-8 rounded-xl bg-white p-6 border">
-              <p className="text-slate-600 text-sm">
-                Backend will handle:
-                <br />• Saving registration into database
-                <br />• Sending confirmation email
-                <br />• Admin reviewing applications + sending admission decision
-              </p>
-            </div>
           </div>
 
           {/* Form */}
@@ -118,10 +114,11 @@ export default function SchoolOfDiscoveryPage() {
 
             {submitted ? (
               <div className="mt-6 rounded-xl border border-teal-200 bg-teal-50 p-5 text-teal-900">
-                ✅ Submission received! (Frontend demo)
-                <p className="mt-2 text-sm text-teal-900/80">
-                  Later, backend will email you automatically.
-                </p>
+                ✅ Your application has been submitted successfully.
+
+<p className="mt-2 text-sm text-teal-900/90">
+  Please check your email for confirmation. Our team will review your application and notify you of your admission status.
+</p>
               </div>
             ) : null}
 
@@ -132,11 +129,11 @@ export default function SchoolOfDiscoveryPage() {
                   Name <span className="text-red-600">*</span>
                 </label>
                 <input
-                  value={form.fullName}
-                  onChange={(e) => updateField("fullName", e.target.value)}
-                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400"
-                  placeholder="Full name"
-                />
+  value={form.fullName}
+  onChange={(e) => updateField("fullName", e.target.value)}
+  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
+  placeholder="Full name"
+/>
               </div>
               <div>
                <label className="block text-sm font-semibold text-slate-900">
@@ -145,7 +142,7 @@ export default function SchoolOfDiscoveryPage() {
               <input
   value={form.email}
   onChange={(e) => updateField("email", e.target.value)}
-  className="mt-2 w-full rounded-lg border px-4 py-3"
+  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
   placeholder="Email Address"
   type="email"
 />
@@ -158,7 +155,7 @@ export default function SchoolOfDiscoveryPage() {
                 <input
                   value={form.addressOrCountry}
                   onChange={(e) => updateField("addressOrCountry", e.target.value)}
-                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400"
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
                   placeholder="Your address or country"
                 />
               </div>
@@ -172,7 +169,7 @@ export default function SchoolOfDiscoveryPage() {
                   type="date"
                   value={form.dateOfBirth}
                   onChange={(e) => updateField("dateOfBirth", e.target.value)}
-                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400"
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
                 />
               </div>
 
@@ -184,7 +181,7 @@ export default function SchoolOfDiscoveryPage() {
                 <textarea
                   value={form.salvationExperience}
                   onChange={(e) => updateField("salvationExperience", e.target.value)}
-                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 min-h-[110px]"
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
                   placeholder="Briefly share your salvation experience..."
                 />
               </div>
@@ -197,7 +194,7 @@ export default function SchoolOfDiscoveryPage() {
                 <input
                   value={form.churchAttending}
                   onChange={(e) => updateField("churchAttending", e.target.value)}
-                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400"
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
                   placeholder="Name of your church"
                 />
               </div>
@@ -210,7 +207,7 @@ export default function SchoolOfDiscoveryPage() {
                 <select
                   value={form.hasSpiritualCovering}
                   onChange={(e) => updateField("hasSpiritualCovering", e.target.value)}
-                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 bg-white"
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 bg-white text-slate-900"
                 >
                   <option value="">Select</option>
                   <option value="Yes">Yes</option>
@@ -226,7 +223,7 @@ export default function SchoolOfDiscoveryPage() {
                 <select
                   value={form.isWorker}
                   onChange={(e) => updateField("isWorker", e.target.value)}
-                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 bg-white"
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 bg-white text-slate-900"
                 >
                   <option value="">Select</option>
                   <option value="Yes">Yes</option>
@@ -242,7 +239,7 @@ export default function SchoolOfDiscoveryPage() {
                 <textarea
                   value={form.expectation}
                   onChange={(e) => updateField("expectation", e.target.value)}
-                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 min-h-[110px]"
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
                   placeholder="What do you expect from School of Discovery?"
                 />
               </div>
@@ -255,7 +252,7 @@ export default function SchoolOfDiscoveryPage() {
                 <select
                   value={form.attendedBibleSchoolBefore}
                   onChange={(e) => updateField("attendedBibleSchoolBefore", e.target.value)}
-                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 bg-white"
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 bg-white text-slate-900"
                 >
                   <option value="">Select</option>
                   <option value="Yes">Yes</option>
@@ -271,21 +268,18 @@ export default function SchoolOfDiscoveryPage() {
                 <textarea
                   value={form.discipleshipInfo}
                   onChange={(e) => updateField("discipleshipInfo", e.target.value)}
-                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 min-h-[110px]"
+                  className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
                   placeholder="In your understanding, who is a disciple?"
                 />
               </div>
 
               <button
-                type="submit"
-                className="w-full rounded-lg bg-purple-600 px-5 py-3 text-white font-semibold hover:bg-purple-700"
-              >
-                Submit Registration
-              </button>
-
-              <p className="text-xs text-slate-500">
-                Note: This is frontend-only for now. Backend will be connected later for emails + admission status.
-              </p>
+  type="submit"
+  disabled={loading}
+  className="w-full rounded-lg bg-purple-600 px-5 py-3 text-white font-semibold hover:bg-purple-700 disabled:opacity-60"
+>
+  {loading ? "Submitting..." : "Submit Registration"}
+</button>
             </form>
           </div>
         </div>

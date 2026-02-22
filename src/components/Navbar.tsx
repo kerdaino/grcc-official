@@ -76,15 +76,6 @@ export default function Navbar() {
   })}
           </nav>
 
- {/* GIVE BUTTON */}
-<Link
-  href="/giving"
-  className="inline-flex items-center gap-2 rounded-xl bg-fuchsia-600 px-6 py-3 text-white font-semibold text-sm shadow hover:bg-fuchsia-700"
->
-  <i className="fa-solid fa-hand-holding-heart" />
-  Give
-</Link>
-
         </div>
       </div>
     </header>
