@@ -20,28 +20,28 @@ export default function ContactPage() {
                   <span className="text-teal-600 mt-0.5">
                     <i className="fa-solid fa-location-dot" />
                   </span>
-                  <p>5 Moses Somefun Street, Adekoya Estate, College Rd.</p>
+                  <p>Behind Make-Up Quarters, Oshola Junction, Near Oyemekun Bus Stop, College Road, Ogba, Lagos, Nigeria.</p>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <span className="text-teal-600">
                     <i className="fa-solid fa-phone" />
                   </span>
-                  <p>+2347032078859</p>
+                  <p>+234 703 668 2410</p>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <span className="text-teal-600">
                     <i className="fa-solid fa-envelope" />
                   </span>
-                  <p>info@grccglobal.org</p>
+                  <p>gloryrealm2025@gmail.com</p>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <span className="text-teal-600">
                     <i className="fa-solid fa-clock" />
                   </span>
-                  <p>Sun: 10:00 AM | Thu: 6:00 PM</p>
+                  <p>Sun: 09:00 AM | Thu: 5:30 PM</p>
                 </div>
               </div>
             </div>

@@ -126,7 +126,7 @@ export function HeroSection() {
               {/* Phone */}
               <div className="flex items-center gap-3 md:justify-end">
                 <IconPhone />
-                <p className="text-sm">+2347032078859</p>
+                <p className="text-sm">+234 703 668 2410</p>
               </div>
             </div>
           </div>

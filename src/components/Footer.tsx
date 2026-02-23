@@ -39,22 +39,19 @@ export default function Footer() {
             </div>
 
             <p className="mt-4 text-white/65 text-sm">
-              Raising Glory Revealing Christians on Earth
+              Raising Glory Revealing Christians in Every Sphere of Influence
             </p>
 
             {/* Socials */}
             <div className="mt-6 flex items-center gap-4 text-white/70">
-              <a href="#" aria-label="Facebook" className="hover:text-white">
+              <a href="https://www.facebook.com/pastoraromeiduh" aria-label="Facebook" className="hover:text-white">
                 <i className="fa-brands fa-facebook-f" />
               </a>
-              <a href="#" aria-label="YouTube" className="hover:text-white">
+              <a href="https://www.youtube.com/@GRCC_Global" aria-label="YouTube" className="hover:text-white">
                 <i className="fa-brands fa-youtube" />
               </a>
-              <a href="#" aria-label="Instagram" className="hover:text-white">
-                <i className="fa-brands fa-instagram" />
-              </a>
-              <a href="#" aria-label="Twitter/X" className="hover:text-white">
-                <i className="fa-brands fa-x-twitter" />
+              <a href="https://www.tiktok.com/@pastoraromeiduh" aria-label="tiktok" className="hover:text-white">
+                <i className="fa-brands fa-tiktok" />
               </a>
             </div>
           </div>
@@ -98,14 +95,14 @@ export default function Footer() {
                 <span className="text-teal-400">
                   <i className="fa-solid fa-phone" />
                 </span>
-                <p>+2347032078859</p>
+                <p>+234 703 668 2410</p>
               </div>
 
               <div className="flex items-center gap-3">
                 <span className="text-teal-400">
                   <i className="fa-solid fa-envelope" />
                 </span>
-                <p>info@grccglobal.org</p>
+                <p></p>
               </div>
 
               <div className="flex items-center gap-3">
@@ -145,6 +142,9 @@ export default function Footer() {
           <div className="flex flex-col gap-3 text-white/50 text-sm md:flex-row md:items-center md:justify-between">
             <div>
               © {new Date().getFullYear()} Gloryrealm Christian Centre. All rights reserved.
+              <span className="block md:inline md:ml-2 text-white/35">
+                Designed by Pinnacle tech hub
+              </span>
               <span className="block md:inline md:ml-2 text-white/35">
                 Developed by KD Global
               </span>
