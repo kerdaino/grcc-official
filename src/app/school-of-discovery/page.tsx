@@ -203,7 +203,7 @@ export default function SchoolOfDiscoveryPage() {
       <PageHero
   title="School of Discovery"
   subtitle="Register for the School of Discovery. After submission, you’ll receive a confirmation email, and later an admission update."
-  image="/images/heroes/sod.jpeg"
+  image="/images/sod.jpeg"
 />
 
       {/* TOP BANNER IMAGE (works even if PageHero doesn’t support background image) */}
