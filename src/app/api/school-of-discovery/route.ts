@@ -60,15 +60,15 @@ export async function POST(req: Request) {
             <p>
               Your School of Discovery registration has been received successfully.
               Our team will review your application and you will receive a follow-up email
-              regarding your admission status.
+              regarding your admission status,Thank You.
+            </p>
+            <p style="margin-top: 18px">
+              Blessings,<br/>
+              <b>GRCC Admin</b>
             </p>
             <div style="padding: 12px; background: #f5f5f5; border-radius: 8px;">
               <p style="margin:0"><b>Status:</b> Pending Review</p>
             </div>
-            <p style="margin-top: 18px">
-              Blessings,<br/>
-              <b>Gloryrealm Christian Centre (GRCC)</b>
-            </p>
           </div>
         `,
       });
