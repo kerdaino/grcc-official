@@ -29,6 +29,7 @@ export async function POST(req: Request) {
           is_worker: body.is_worker ?? "",
           expectation: body.expectation ?? "",
           attended_bible_school: body.attended_bible_school ?? "",
+          bible_school_name: body.bible_school_name ?? "",
           disciple_of: body.disciple_of ?? "",
           email: body.email,
           status: "pending", // IMPORTANT (no quotes)
