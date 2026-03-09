@@ -3,7 +3,7 @@ import PageHero from "@/components/PageHero";
 export default function BlogSinglePage({ params }: { params: { slug: string } }) {
   return (
     <main>
-      <PageHero title="Blog" subtitle={`Post: ${params.slug}`} />
+      <PageHero title="Blog" subtitle={`Post: ${params.slug}`} image="/images/gallery3.jpg"/>
 
       <section className="bg-white">
         <div className="mx-auto max-w-4xl px-4 py-16">

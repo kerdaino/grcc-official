@@ -1,26 +1,99 @@
+"use client";
+
 import PageHero from "@/components/PageHero";
+import { useState } from "react";
 
 export default function ContactPage() {
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
+  function updateField(key: keyof typeof form, value: string) {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    setError("");
+    setSuccess(false);
+
+    if (!form.name || !form.email || !form.message) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // This will later connect to backend
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.ok) {
+        setError(data?.message || "Unable to send message.");
+        setLoading(false);
+        return;
+      }
+
+      setSuccess(true);
+
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        message: "",
+      });
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main>
       <PageHero
         title="Contact"
         subtitle="We’d love to hear from you. Reach us or send a message."
+        image="/images/contact.jpg"
       />
 
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-16 grid gap-10 md:grid-cols-2">
-          {/* Left: Contact cards */}
+
+          {/* LEFT SIDE */}
           <div className="space-y-6">
+
             <div className="rounded-2xl border bg-slate-50 p-7">
-              <h3 className="font-extrabold text-slate-900 text-lg">Contact Details</h3>
+              <h3 className="font-extrabold text-slate-900 text-lg">
+                Contact Details
+              </h3>
 
               <div className="mt-5 space-y-4 text-slate-700">
+
                 <div className="flex items-start gap-3">
                   <span className="text-teal-600 mt-0.5">
                     <i className="fa-solid fa-location-dot" />
                   </span>
-                  <p>Behind Make-Up Quarters, Oshola Junction, Near Oyemekun Bus Stop, College Road, Ogba, Lagos, Nigeria.</p>
+                  <p>
+                    Behind Make-Up Quarters, Oshola Junction, Near Oyemekun Bus Stop,
+                    College Road, Ogba, Lagos, Nigeria.
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -43,11 +116,15 @@ export default function ContactPage() {
                   </span>
                   <p>Sun: 09:00 AM | Thu: 5:30 PM</p>
                 </div>
+
               </div>
             </div>
 
             <div className="rounded-2xl border bg-slate-50 p-7">
-              <h3 className="font-extrabold text-slate-900 text-lg">Directions</h3>
+              <h3 className="font-extrabold text-slate-900 text-lg">
+                Directions
+              </h3>
+
               <p className="mt-3 text-slate-600">
                 Use Google Maps to get directions to the church location.
               </p>
@@ -62,40 +139,66 @@ export default function ContactPage() {
                 Get Directions
               </a>
             </div>
+
           </div>
 
-          {/* Right: Form */}
+          {/* RIGHT SIDE FORM */}
           <div className="rounded-2xl border bg-white p-8 shadow-sm">
-            <h3 className="font-extrabold text-slate-900 text-lg">Send a Message</h3>
-            <p className="mt-2 text-slate-600 text-sm">
-              (Frontend only for now. Backend will be connected later.)
-            </p>
+            <h3 className="font-extrabold text-slate-900 text-lg">
+              Send a Message
+            </h3>
 
-            <form className="mt-6 space-y-4">
+            {error && (
+              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
+                ✅ Message sent successfully. We will get back to you soon.
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+
               <input
-                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400"
+                value={form.name}
+                onChange={(e) => updateField("name", e.target.value)}
+                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
                 placeholder="Full Name"
               />
+
               <input
-                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400"
+                value={form.email}
+                onChange={(e) => updateField("email", e.target.value)}
+                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
                 placeholder="Email Address"
                 type="email"
               />
+
               <input
-                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400"
+                value={form.phone}
+                onChange={(e) => updateField("phone", e.target.value)}
+                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
                 placeholder="Phone Number"
               />
+
               <textarea
-                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 min-h-[140px]"
+                value={form.message}
+                onChange={(e) => updateField("message", e.target.value)}
+                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
                 placeholder="Your Message"
               />
 
               <button
-                type="button"
-                className="w-full rounded-lg bg-teal-600 px-5 py-3 text-white font-semibold hover:bg-teal-700"
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-lg bg-teal-600 px-5 py-3 text-white font-semibold hover:bg-teal-700 disabled:opacity-60"
               >
-                Send Message
+                {loading ? "Sending..." : "Send Message"}
               </button>
+
             </form>
           </div>
         </div>

@@ -23,7 +23,7 @@ export default function WorkforcePage() {
       <PageHero
         title="Ministries"
         subtitle="Join the workforce and serve with us. Workers will receive login access after approval."
-      />
+      image="/images/min.png" />
 
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-16 grid gap-10 md:grid-cols-2">

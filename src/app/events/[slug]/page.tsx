@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function EventSinglePage({ params }: { params: { slug: string } }) {
   return (
     <main>
-      <PageHero title="Event" subtitle={`Event: ${params.slug}`} />
+      <PageHero title="Event" subtitle={`Event: ${params.slug}`} image="/images/events.jpg"/>
 
       <section className="bg-white">
         <div className="mx-auto max-w-4xl px-4 py-16">

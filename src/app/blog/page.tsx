@@ -19,7 +19,7 @@ const posts = [
 export default function BlogPage() {
   return (
     <main>
-      <PageHero title="Blog" subtitle="Articles, updates, and ministry notes." />
+      <PageHero title="Blog" subtitle="Articles, updates, and ministry notes." image="/images/gallery3.jpg"/>
 
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-16">

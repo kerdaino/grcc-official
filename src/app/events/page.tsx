@@ -19,7 +19,7 @@ const events = [
 export default function EventsPage() {
   return (
     <main>
-      <PageHero title="Events" subtitle="See upcoming events and service gatherings." />
+      <PageHero title="Events" subtitle="See upcoming events and service gatherings." image="/images/events.jpg"/>
 
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-16">

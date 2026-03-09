@@ -24,8 +24,7 @@ export default async function SermonsPage() {
 
   return (
     <main>
-      <PageHero title="Sermons" subtitle="Watch and listen to recent messages." />
-
+      <PageHero title="Sermons" subtitle="Watch and listen to recent messages." image="/images/sermons.jpg"/>
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-12">
           {rows.length === 0 ? (

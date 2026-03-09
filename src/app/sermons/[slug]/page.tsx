@@ -32,7 +32,7 @@ export default async function SermonSinglePage({
   if (!res.ok || !data?.ok) {
     return (
       <main>
-        <PageHero title="Sermon Not Found" subtitle="This message may not be published yet." />
+        <PageHero title="Sermon Not Found" subtitle="This message may not be published yet." image="/images/sermons.jpg"/>
         <div className="mx-auto max-w-3xl px-4 py-12 text-center">
           <Link href="/sermons" className="text-fuchsia-700 font-semibold hover:underline">
             ← Back to Sermons

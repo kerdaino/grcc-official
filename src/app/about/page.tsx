@@ -86,6 +86,7 @@ export default function AboutPage() {
       <PageHero
         title="About"
         subtitle="Learn about our vision, mission, message, and what we believe at Gloryrealm Christian Centre (GRCC)."
+        image="/images/about.jpg"
       />
 
       {/* Intro */}

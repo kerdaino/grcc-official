@@ -109,12 +109,25 @@ export default function SchoolOfDiscoveryPage() {
     setSubmitted(false);
 
     // Validate required fields
-    if (!form.fullName || !form.addressOrCountry || !form.dateOfBirth || !form.email) {
-      const msg = "Please fill all required fields (Name, Email, Address/Country, Date of Birth).";
-      setError(msg);
-      showToast("error", msg);
-      return;
-    }
+// Validate all required fields
+if (
+  !form.fullName ||
+  !form.email ||
+  !form.addressOrCountry ||
+  !form.dateOfBirth ||
+  !form.salvationExperience ||
+  !form.churchAttending ||
+  !form.hasSpiritualCovering ||
+  !form.isWorker ||
+  !form.expectation ||
+  !form.attendedBibleSchoolBefore ||
+  !form.discipleshipInfo
+) {
+  const msg = "Please complete all fields before submitting the form.";
+  setError(msg);
+  showToast("error", msg);
+  return;
+}
 
     // If they said Yes, require the school name
     if (form.attendedBibleSchoolBefore === "Yes" && !form.bibleSchoolName.trim()) {
@@ -291,6 +304,7 @@ export default function SchoolOfDiscoveryPage() {
                   Name <span className="text-red-600">*</span>
                 </label>
                 <input
+                 required
                   value={form.fullName}
                   onChange={(e) => updateField("fullName", e.target.value)}
                   className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
@@ -304,6 +318,7 @@ export default function SchoolOfDiscoveryPage() {
                   Email Address <span className="text-red-600">*</span>
                 </label>
                 <input
+                 required
                   value={form.email}
                   onChange={(e) => updateField("email", e.target.value)}
                   className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
@@ -318,6 +333,7 @@ export default function SchoolOfDiscoveryPage() {
                   Address or Country <span className="text-red-600">*</span>
                 </label>
                 <input
+                 required
                   value={form.addressOrCountry}
                   onChange={(e) => updateField("addressOrCountry", e.target.value)}
                   className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
@@ -331,6 +347,7 @@ export default function SchoolOfDiscoveryPage() {
                   Date of Birth <span className="text-red-600">*</span>
                 </label>
                 <input
+                 required
                   type="date"
                   value={form.dateOfBirth}
                   onChange={(e) => updateField("dateOfBirth", e.target.value)}
@@ -341,9 +358,10 @@ export default function SchoolOfDiscoveryPage() {
               {/* Salvation */}
               <div>
                 <label className="block text-sm font-semibold text-slate-900">
-                  Salvation Experience
+                  Salvation Experience <span className="text-red-600">*</span>
                 </label>
                 <textarea
+                 required
                   value={form.salvationExperience}
                   onChange={(e) => updateField("salvationExperience", e.target.value)}
                   className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400 min-h-[110px]"
@@ -354,9 +372,10 @@ export default function SchoolOfDiscoveryPage() {
               {/* Church */}
               <div>
                 <label className="block text-sm font-semibold text-slate-900">
-                  Church Attending
+                  Church Attending <span className="text-red-600">*</span>
                 </label>
                 <input
+                 required
                   value={form.churchAttending}
                   onChange={(e) => updateField("churchAttending", e.target.value)}
                   className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
@@ -367,9 +386,10 @@ export default function SchoolOfDiscoveryPage() {
               {/* Spiritual covering */}
               <div>
                 <label className="block text-sm font-semibold text-slate-900">
-                  Do you have spiritual covering?
+                  Do you have spiritual covering? <span className="text-red-600">*</span>
                 </label>
                 <select
+                 required
                   value={form.hasSpiritualCovering}
                   onChange={(e) => updateField("hasSpiritualCovering", e.target.value)}
                   className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 bg-white text-slate-900"
@@ -383,9 +403,10 @@ export default function SchoolOfDiscoveryPage() {
               {/* Worker */}
               <div>
                 <label className="block text-sm font-semibold text-slate-900">
-                  Are you a worker in your place of worship?
+                  Are you a worker in your place of worship? <span className="text-red-600">*</span>
                 </label>
                 <select
+                 required
                   value={form.isWorker}
                   onChange={(e) => updateField("isWorker", e.target.value)}
                   className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 bg-white text-slate-900"
@@ -399,9 +420,10 @@ export default function SchoolOfDiscoveryPage() {
               {/* Expectation */}
               <div>
                 <label className="block text-sm font-semibold text-slate-900">
-                  What is your expectation?
+                  What is your expectation? <span className="text-red-600">*</span>
                 </label>
                 <textarea
+                 required
                   value={form.expectation}
                   onChange={(e) => updateField("expectation", e.target.value)}
                   className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400 min-h-[110px]"
@@ -412,9 +434,10 @@ export default function SchoolOfDiscoveryPage() {
               {/* Attended school */}
               <div>
                 <label className="block text-sm font-semibold text-slate-900">
-                  Have you attended any theological, bible, or discipleship school before?
+                  Have you attended any theological, bible, or discipleship school before? <span className="text-red-600">*</span>
                 </label>
                 <select
+                 required
                   value={form.attendedBibleSchoolBefore}
                   onChange={(e) => {
                     updateField("attendedBibleSchoolBefore", e.target.value);
@@ -435,6 +458,7 @@ export default function SchoolOfDiscoveryPage() {
                     Name of the School Attended <span className="text-red-600">*</span>
                   </label>
                   <input
+                   required
                     value={form.bibleSchoolName}
                     onChange={(e) => updateField("bibleSchoolName", e.target.value)}
                     className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
@@ -446,9 +470,10 @@ export default function SchoolOfDiscoveryPage() {
               {/* Who is a disciple */}
               <div>
                 <label className="block text-sm font-semibold text-slate-900">
-                  Who is a disciple?
+                  Who is a disciple? <span className="text-red-600">*</span>
                 </label>
                 <textarea
+                 required
                   value={form.discipleshipInfo}
                   onChange={(e) => updateField("discipleshipInfo", e.target.value)}
                   className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400 min-h-[110px]"

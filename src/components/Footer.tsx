@@ -1,8 +1,10 @@
 // src/components/Footer.tsx
 // Footer layout matching the screenshot: About (logo + socials), Quick Links, Contact, Newsletter, bottom bar links.
 
+"use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 const quickLinks = [
   ["About Us", "/about"],
@@ -11,10 +13,18 @@ const quickLinks = [
   ["Ministries", "/ministries"],
   ["Gallery", "/gallery"],
   ["Blog", "/blog"],
+  ["School of Discovery", "/school-of-discovery"],
   ["Giving", "/giving"],
 ] as const;
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+const [subscribed, setSubscribed] = useState(false);
+
+function handleSubscribe() {
+  if (!email) return;
+  setSubscribed(true);
+}
   return (
     <footer className="bg-gradient-to-b from-slate-950 to-slate-950/95 text-white">
       <div className="mx-auto max-w-6xl px-4 py-14">
@@ -44,13 +54,13 @@ export default function Footer() {
 
             {/* Socials */}
             <div className="mt-6 flex items-center gap-4 text-white/70">
-              <a href="https://www.facebook.com/pastoraromeiduh" aria-label="Facebook" className="hover:text-white">
+              <a href="https://www.facebook.com/pastoraromeiduh" aria-label="Facebook" className="hover:text-white" target="_blank">
                 <i className="fa-brands fa-facebook-f" />
               </a>
-              <a href="https://www.youtube.com/@GRCC_Global" aria-label="YouTube" className="hover:text-white">
+              <a href="https://www.youtube.com/@GRCC_Global" aria-label="YouTube" className="hover:text-white" target="_blank">
                 <i className="fa-brands fa-youtube" />
               </a>
-              <a href="https://www.tiktok.com/@pastoraromeiduh" aria-label="tiktok" className="hover:text-white">
+              <a href="https://www.tiktok.com/@pastoraromeiduh" aria-label="tiktok" className="hover:text-white" target="_blank">
                 <i className="fa-brands fa-tiktok" />
               </a>
             </div>
@@ -95,14 +105,18 @@ export default function Footer() {
                 <span className="text-teal-400">
                   <i className="fa-solid fa-phone" />
                 </span>
-                <p>+234 703 668 2410</p>
+                <a href="tel:+2347036682410" className="hover:text-white">
+  +234 703 668 2410
+</a>
               </div>
 
               <div className="flex items-center gap-3">
                 <span className="text-teal-400">
                   <i className="fa-solid fa-envelope" />
                 </span>
-                <p></p>
+                <a href="mailto:gloryrealm2025@gmail.com" className="hover:text-white">
+  gloryrealm2025@gmail.com
+</a>
               </div>
 
               <div className="flex items-center gap-3">
@@ -116,24 +130,35 @@ export default function Footer() {
 
           {/* Newsletter */}
           <div>
+            
             <h4 className="font-bold text-lg text-white">Newsletter</h4>
-            <div className="mt-2 h-1 w-12 bg-fuchsia-600" />
-
-            <p className="mt-6 text-white/70 text-sm">
-              Subscribe to get updates on events, sermons and more.
-            </p>
-
             <div className="mt-4 space-y-3">
-              <input
-                placeholder="Your email address"
-                className="w-full rounded-lg bg-white/10 px-4 py-3 text-sm outline-none placeholder:text-white/40 border border-white/10 focus:border-white/25"
-              />
 
-              <button className="w-full rounded-lg bg-fuchsia-600 px-4 py-3 text-sm font-semibold hover:bg-fuchsia-700 inline-flex items-center justify-center gap-2">
-                <i className="fa-solid fa-paper-plane" />
-                Subscribe
-              </button>
-            </div>
+{subscribed ? (
+  <p className="text-emerald-400 text-sm">
+    Thank you for subscribing!
+  </p>
+) : (
+  <>
+    <input
+      type="email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      placeholder="Your email address"
+      className="w-full rounded-lg bg-white/10 px-4 py-3 text-sm outline-none placeholder:text-white/40 border border-white/10 focus:border-white/25"
+    />
+
+    <button
+      onClick={handleSubscribe}
+      className="w-full rounded-lg bg-fuchsia-600 px-4 py-3 text-sm font-semibold hover:bg-fuchsia-700 inline-flex items-center justify-center gap-2"
+    >
+      <i className="fa-solid fa-paper-plane" />
+      Subscribe
+    </button>
+  </>
+)}
+
+</div>
           </div>
         </div>
 
@@ -143,11 +168,26 @@ export default function Footer() {
             <div>
               © {new Date().getFullYear()} Gloryrealm Christian Centre. All rights reserved.
               <span className="block md:inline md:ml-2 text-white/35">
-                Designed by Pinnacle tech hub
-              </span>
-              <span className="block md:inline md:ml-2 text-white/35">
-                Developed by KD Global
-              </span>
+  Designed by{" "}
+  <a
+    href="#"
+    target="_blank"
+    className="hover:text-white underline"
+  >
+    Pinnacle Tech Hub
+  </a>
+</span>
+
+<span className="block md:inline md:ml-2 text-white/35">
+  Developed by{" "}
+  <a
+    href="https://www.kdevglobal.com"
+    target="_blank"
+    className="hover:text-white underline"
+  >
+    KD Global
+  </a>
+</span>
             </div>
 
             <div className="flex items-center gap-6 md:justify-end">
