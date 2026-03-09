@@ -14,13 +14,14 @@ function slugify(input: string) {
 export async function POST(req: Request) {
   const cookieStore = await cookies();
   const isAdmin = cookieStore.get("grcc_admin")?.value === "1";
+
   if (!isAdmin) {
     return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
   }
 
   const body = await req.json();
 
-  if (!body?.title) {
+  if (!body?.title?.trim()) {
     return NextResponse.json({ ok: false, message: "Title is required" }, { status: 400 });
   }
 
@@ -28,19 +29,22 @@ export async function POST(req: Request) {
 
   const { error } = await supabaseServer.from("sermons").insert([
     {
-      title: body.title,
+      title: body.title.trim(),
       slug,
-      preacher: body.preacher || "",
+      preacher: body.preacher?.trim() || "",
       sermon_date: body.sermon_date || null,
-      scripture: body.scripture || "",
-      summary: body.summary || "",
-      youtube_url: body.youtube_url || "",
-      audio_url: body.audio_url || "",
-      thumbnail_url: body.thumbnail_url || "",
+      scripture: body.scripture?.trim() || "",
+      summary: body.summary?.trim() || "",
+      youtube_url: body.youtube_url?.trim() || "",
+      audio_url: body.audio_url?.trim() || "",
+      thumbnail_url: body.thumbnail_url?.trim() || "",
       is_published: body.is_published ?? false,
     },
   ]);
 
-  if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+  if (error) {
+    return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+  }
+
   return NextResponse.json({ ok: true });
 }

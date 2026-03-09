@@ -1,5 +1,6 @@
 import PageHero from "@/components/PageHero";
 import Link from "next/link";
+import { supabaseServer } from "@/lib/supabaseServer";
 
 type Sermon = {
   id: string;
@@ -15,16 +16,24 @@ type Sermon = {
 };
 
 export default async function SermonsPage() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || ""}/api/sermons/list`, {
-    cache: "no-store",
-  });
+  const { data, error } = await supabaseServer
+    .from("sermons")
+    .select(
+      "id, created_at, title, slug, preacher, sermon_date, scripture, summary, youtube_url, thumbnail_url"
+    )
+    .eq("is_published", true)
+    .order("sermon_date", { ascending: false });
 
-  const data = await res.json().catch(() => null);
-  const rows: Sermon[] = data?.rows || [];
+  const rows: Sermon[] = error ? [] : data || [];
 
   return (
     <main>
-      <PageHero title="Sermons" subtitle="Watch and listen to recent messages." image="/images/sermons.jpg"/>
+      <PageHero
+        title="Sermons"
+        subtitle="Watch and listen to recent messages."
+        image="/images/sermons.jpg"
+      />
+
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-12">
           {rows.length === 0 ? (
@@ -37,19 +46,18 @@ export default async function SermonsPage() {
                 <Link
                   key={s.id}
                   href={`/sermons/${s.slug}`}
-                  className="group rounded-2xl border overflow-hidden hover:shadow-lg transition"
+                  className="group overflow-hidden rounded-2xl border bg-white transition hover:shadow-lg"
                 >
-                  <div className="h-44 bg-slate-200 overflow-hidden">
-                    {/* If thumbnail_url exists show it, else show a fallback */}
+                  <div className="h-52 overflow-hidden bg-slate-100">
                     {s.thumbnail_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={s.thumbnail_url}
                         alt={s.title}
-                        className="h-full w-full object-cover group-hover:scale-[1.03] transition"
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="h-full w-full grid place-items-center text-slate-500 text-sm">
+                      <div className="grid h-full w-full place-items-center text-sm text-slate-500">
                         No Thumbnail
                       </div>
                     )}
@@ -57,20 +65,20 @@ export default async function SermonsPage() {
 
                   <div className="p-5">
                     <p className="text-sm text-slate-500">
-                      {s.sermon_date ? s.sermon_date : "—"}{" "}
-                      {s.preacher ? `• ${s.preacher}` : ""}
+                      {s.sermon_date || "—"}
+                      {s.preacher ? ` • ${s.preacher}` : ""}
                     </p>
 
-                    <h3 className="mt-2 font-extrabold text-slate-900 text-lg leading-snug">
+                    <h3 className="mt-2 text-lg font-extrabold leading-snug text-slate-900">
                       {s.title}
                     </h3>
 
-                    <p className="mt-2 text-sm text-slate-600 line-clamp-3">
+                    <p className="mt-2 line-clamp-3 text-sm text-slate-600">
                       {s.summary || "Click to watch this message."}
                     </p>
 
-                    <p className="mt-4 text-fuchsia-700 font-semibold text-sm">
-                      Watch → 
+                    <p className="mt-4 text-sm font-semibold text-fuchsia-700">
+                      Watch →
                     </p>
                   </div>
                 </Link>
