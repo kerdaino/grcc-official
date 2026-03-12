@@ -31,7 +31,6 @@ export default async function EventsPage() {
 
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-16">
-
           {rows.length === 0 ? (
             <div className="rounded-2xl border bg-slate-50 p-10 text-center text-slate-600">
               No upcoming events yet.
@@ -42,28 +41,45 @@ export default async function EventsPage() {
                 <Link
                   key={e.id}
                   href={`/events/${e.slug}`}
-                  className="rounded-2xl border bg-white p-6 shadow-sm hover:shadow-md transition"
+                  className="overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-md"
                 >
-                  <p className="text-sm text-slate-500">
-                    {e.event_date || "—"} {e.event_time ? `• ${e.event_time}` : ""}
-                  </p>
+                  <div className="h-52 w-full overflow-hidden bg-slate-100">
+                    {e.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={e.image_url}
+                        alt={e.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="grid h-full w-full place-items-center text-sm text-slate-500">
+                        No Event Image
+                      </div>
+                    )}
+                  </div>
 
-                  <h3 className="mt-2 font-extrabold text-slate-900">
-                    {e.title}
-                  </h3>
+                  <div className="p-6">
+                    <p className="text-sm text-slate-500">
+                      {e.event_date || "—"}
+                      {e.event_time ? ` • ${e.event_time}` : ""}
+                    </p>
 
-                  <p className="mt-3 text-sm text-slate-600">
-                    {e.location || "Location not specified"}
-                  </p>
+                    <h3 className="mt-2 font-extrabold text-slate-900">
+                      {e.title}
+                    </h3>
 
-                  <p className="mt-5 font-semibold text-purple-700">
-                    View Details →
-                  </p>
+                    <p className="mt-3 text-sm text-slate-600">
+                      {e.location || "Location not specified"}
+                    </p>
+
+                    <p className="mt-5 font-semibold text-purple-700">
+                      View Details →
+                    </p>
+                  </div>
                 </Link>
               ))}
             </div>
           )}
-
         </div>
       </section>
     </main>

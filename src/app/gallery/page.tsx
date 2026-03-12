@@ -1,43 +1,39 @@
 "use client";
 
 import PageHero from "@/components/PageHero";
-import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-// TEMP FRONTEND DATA
-// Later this can come from Supabase database/storage
-const photos = [
-  {
-    src: "/images/gallery1.jpg",
-    title: "Church Service Moment",
-  },
-  {
-    src: "/images/gallery2.jpg",
-    title: "Church Service Moment",
-  },
-  {
-    src: "/images/gallery3.jpg",
-    title: "Church Service Moment",
-  },
-  {
-    src: "/images/gallery4.jpg",
-    title: "Church Service Moment",
-  },
-  {
-    src: "/images/gallery5.jpg",
-    title: "Church Service Moment",
-  },
-  {
-    src: "/images/gallery6.jpg",
-    title: "Church Service Moment",
-  },
-];
+type GalleryPhoto = {
+  id: string;
+  title: string | null;
+  image_url: string;
+};
 
 export default function GalleryPage() {
+  const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState<null | {
     src: string;
     title: string;
   }>(null);
+
+  useEffect(() => {
+    async function loadPhotos() {
+      const res = await fetch("/api/gallery/list", { cache: "no-store" });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.ok) {
+        setPhotos([]);
+        setLoading(false);
+        return;
+      }
+
+      setPhotos(data.rows || []);
+      setLoading(false);
+    }
+
+    loadPhotos();
+  }, []);
 
   return (
     <main>
@@ -49,7 +45,11 @@ export default function GalleryPage() {
 
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-16">
-          {photos.length === 0 ? (
+          {loading ? (
+            <div className="grid place-items-center rounded-2xl border bg-slate-50 p-16 text-center">
+              <p className="text-slate-600">Loading gallery...</p>
+            </div>
+          ) : photos.length === 0 ? (
             <div className="grid place-items-center rounded-2xl border bg-slate-50 p-16 text-center">
               <p className="text-slate-600">No gallery images available yet.</p>
             </div>
@@ -57,25 +57,28 @@ export default function GalleryPage() {
             <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3">
               {photos.map((photo) => (
                 <button
-                  key={photo.src}
+                  key={photo.id}
                   type="button"
-                  onClick={() => setActiveImage(photo)}
-                  className="group overflow-hidden rounded-2xl border bg-slate-50 shadow-sm text-left hover:shadow-md transition"
+                  onClick={() =>
+                    setActiveImage({
+                      src: photo.image_url,
+                      title: photo.title || "Church Gallery Photo",
+                    })
+                  }
+                  className="group overflow-hidden rounded-2xl border bg-slate-50 text-left shadow-sm transition hover:shadow-md"
                 >
-                  {/* Image wrapper */}
-                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-200">
-                    <Image
-                      src={photo.src}
-                      alt={photo.title}
-                      fill
-                      className="object-cover transition duration-500 group-hover:scale-105"
+                  <div className="aspect-[4/3] w-full overflow-hidden bg-slate-200">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo.image_url}
+                      alt={photo.title || "Church gallery"}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
                   </div>
 
-                  {/* Caption */}
                   <div className="p-4">
                     <p className="text-sm font-medium text-slate-700">
-                      {photo.title}
+                      {photo.title || "Church Gallery Photo"}
                     </p>
                   </div>
                 </button>
@@ -85,10 +88,8 @@ export default function GalleryPage() {
         </div>
       </section>
 
-      {/* POPUP MODAL */}
       {activeImage ? (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 p-4">
-          {/* Close when background is clicked */}
           <button
             type="button"
             className="absolute inset-0 cursor-default"
@@ -97,7 +98,6 @@ export default function GalleryPage() {
           />
 
           <div className="relative z-10 w-full max-w-5xl">
-            {/* Close button */}
             <button
               type="button"
               onClick={() => setActiveImage(null)}
@@ -107,13 +107,13 @@ export default function GalleryPage() {
             </button>
 
             <div className="overflow-hidden rounded-2xl bg-white shadow-2xl">
-              <div className="relative w-full bg-black">
-                <div className="relative h-[70vh] w-full">
-                  <Image
+              <div className="w-full bg-black">
+                <div className="h-[70vh] w-full">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={activeImage.src}
                     alt={activeImage.title}
-                    fill
-                    className="object-contain"
+                    className="h-full w-full object-contain"
                   />
                 </div>
               </div>
