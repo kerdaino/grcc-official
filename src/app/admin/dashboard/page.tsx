@@ -46,6 +46,13 @@ const adminLinks = [
     color: "from-emerald-600 to-green-600",
     icon: "fa-solid fa-people-group",
   },
+  {
+  title: "Contact Messages",
+  desc: "View contact form submissions from visitors and respond to inquiries.",
+  href: "/admin/contact",
+  color: "from-cyan-600 to-sky-600",
+  icon: "fa-solid fa-envelope-open-text",
+},
 ];
 
 export default function AdminDashboardPage() {

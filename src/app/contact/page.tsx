@@ -33,7 +33,6 @@ export default function ContactPage() {
     setLoading(true);
 
     try {
-      // This will later connect to backend
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: {
@@ -120,12 +119,33 @@ export default function ContactPage() {
               </div>
             </div>
 
+            {/* WhatsApp Quick Contact */}
+            <div className="rounded-2xl border bg-green-50 p-7">
+              <h3 className="font-extrabold text-slate-900 text-lg">
+                Quick Contact
+              </h3>
+
+              <p className="mt-3 text-slate-700">
+                Need a faster response? Chat with us directly on WhatsApp.
+              </p>
+
+              <a
+                href="https://wa.me/2347036682410"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-green-600 px-5 py-3 text-white font-semibold hover:bg-green-700"
+              >
+                <i className="fa-brands fa-whatsapp" />
+                Chat on WhatsApp
+              </a>
+            </div>
+
             <div className="rounded-2xl border bg-slate-50 p-7">
               <h3 className="font-extrabold text-slate-900 text-lg">
                 Directions
               </h3>
 
-              <p className="mt-3 text-slate-600">
+              <p className="mt-3 text-slate-700">
                 Use Google Maps to get directions to the church location.
               </p>
 
@@ -148,6 +168,10 @@ export default function ContactPage() {
               Send a Message
             </h3>
 
+            <p className="mt-2 text-sm text-slate-600">
+              Fill the form below and our team will get back to you shortly.
+            </p>
+
             {error && (
               <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
                 {error}
@@ -156,40 +180,59 @@ export default function ContactPage() {
 
             {success && (
               <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
-                ✅ Message sent successfully. We will get back to you soon.
+                ✅ Your message has been received.
+                <p className="mt-1 text-sm">
+                  Our team will respond to you as soon as possible.
+                </p>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
 
-              <input
-                value={form.name}
-                onChange={(e) => updateField("name", e.target.value)}
-                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
-                placeholder="Full Name"
-              />
+              <div>
+                <label className="text-sm font-semibold text-slate-700">
+                  Full Name *
+                </label>
+                <input
+                  value={form.name}
+                  onChange={(e) => updateField("name", e.target.value)}
+                  className="mt-1 w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                />
+              </div>
 
-              <input
-                value={form.email}
-                onChange={(e) => updateField("email", e.target.value)}
-                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
-                placeholder="Email Address"
-                type="email"
-              />
+              <div>
+                <label className="text-sm font-semibold text-slate-700">
+                  Email Address *
+                </label>
+                <input
+                  value={form.email}
+                  onChange={(e) => updateField("email", e.target.value)}
+                  className="mt-1 w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                  type="email"
+                />
+              </div>
 
-              <input
-                value={form.phone}
-                onChange={(e) => updateField("phone", e.target.value)}
-                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
-                placeholder="Phone Number"
-              />
+              <div>
+                <label className="text-sm font-semibold text-slate-700">
+                  Phone Number
+                </label>
+                <input
+                  value={form.phone}
+                  onChange={(e) => updateField("phone", e.target.value)}
+                  className="mt-1 w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                />
+              </div>
 
-              <textarea
-                value={form.message}
-                onChange={(e) => updateField("message", e.target.value)}
-                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 text-slate-900 placeholder:text-slate-400"
-                placeholder="Your Message"
-              />
+              <div>
+                <label className="text-sm font-semibold text-slate-700">
+                  Message *
+                </label>
+                <textarea
+                  value={form.message}
+                  onChange={(e) => updateField("message", e.target.value)}
+                  className="mt-1 w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400 min-h-[130px]"
+                />
+              </div>
 
               <button
                 type="submit"
