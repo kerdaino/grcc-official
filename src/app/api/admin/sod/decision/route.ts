@@ -54,20 +54,80 @@ const isAdmin = cookieStore.get("grcc_admin")?.value === "1";
   const html =
     decision === "admitted"
       ? `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6">
-          <h2>Congratulations ✅</h2>
-          <p>Dear <b>${applicantName}</b>,</p>
-          <p>
-            We are pleased to inform you that you have been <b>ADMITTED</b> into the School of Discovery.
-          </p>
-          <p>
-            Further details will be communicated to you shortly.
-          </p>
-          <p style="margin-top: 18px">
-            Blessings,<br/>
-            <b>Gloryrealm Christian Centre (GRCC)</b>
-          </p>
-        </div>
+       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+  <h2>Congratulations 🎉</h2>
+
+  <p>Dear ${applicantName},</p>
+
+  <p>
+    We are pleased to inform you that you have been <strong>admitted</strong> into the 
+    <strong>School of Discovery</strong>.
+  </p>
+
+  <p>
+    This program is designed to build you spiritually, strengthen your foundation, 
+    and equip you to live and represent Christ effectively in every area of life.
+  </p>
+
+  <hr />
+
+  <h3>Enrollment Instruction</h3>
+
+  <p>
+    To confirm your participation, kindly complete your enrollment by making a payment of:
+  </p>
+
+  <p style="font-size: 18px; font-weight: bold;">
+    ₦5,000 (Nigeria) <br/>
+    $5 (International Students)
+  </p>
+
+  <p>
+    This fee covers program logistics, coordination, certificate, and student support systems.
+  </p>
+
+  <h4>Payment Details</h4>
+
+  <p>
+    <strong>Account Name:</strong> GLORYREALM CHRISTIAN CENTRE <br/>
+    <strong>Bank:</strong> Access Bank
+  </p>
+
+  <p>
+    <strong>Naira Account:</strong> 1917160885 <br/>
+    <strong>Dollar Account:</strong> 1917918141
+  </p>
+
+  <p>
+    After making payment, kindly send your proof of payment by replying to this email.
+  </p>
+
+  <p>
+    <strong>If you are having any difficulty making payment, please reply to this email and let us know your concerns.</strong>
+  </p>
+
+  <hr />
+
+  <p>
+    <strong>Important:</strong> Admission is only confirmed after payment.
+  </p>
+
+  <p>
+    Once your payment is verified, you will receive:
+    <br/>• Access to the student dashboard  
+    <br/>• Class schedule and live session link  
+    <br/>• Further onboarding instructions
+  </p>
+
+  <p>
+    We look forward to having you in this journey.
+  </p>
+
+  <p>
+    Blessings,<br/>
+    <strong>GRCC Admin</strong>
+  </p>
+</div>
       `
       : `
         <div style="font-family: Arial, sans-serif; line-height: 1.6">
@@ -82,7 +142,7 @@ const isAdmin = cookieStore.get("grcc_admin")?.value === "1";
           </p>
           <p style="margin-top: 18px">
             Blessings,<br/>
-            <b>Gloryrealm Christian Centre (GRCC)</b>
+            <b>GRCC Admin</b>
           </p>
         </div>
       `;

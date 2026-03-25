@@ -3,19 +3,29 @@ import { supabaseServer } from "@/lib/supabaseServer";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const FORM_OPEN = false;
 
 export async function POST(req: Request) {
+  if (!FORM_OPEN) {
+    return NextResponse.json(
+      { ok: false, message: "Registration is closed for this cohort." },
+      { status: 403 }
+    );
+  }
+
   try {
     const body = await req.json();
 
     if (!body?.name || !body?.address || !body?.date_of_birth || !body?.email) {
       return NextResponse.json(
-        { ok: false, message: "Missing required fields (name, address, date_of_birth, email)." },
+        {
+          ok: false,
+          message: "Missing required fields (name, address, date_of_birth, email).",
+        },
         { status: 400 }
       );
     }
 
-    // 1) Insert and return the inserted row (PROOF)
     const { data: inserted, error: insertErr } = await supabaseServer
       .from("school_of_discovery")
       .insert([
@@ -32,17 +42,19 @@ export async function POST(req: Request) {
           bible_school_name: body.bible_school_name ?? "",
           disciple_of: body.disciple_of ?? "",
           email: body.email,
-          status: "pending", // IMPORTANT (no quotes)
+          status: "pending",
         },
       ])
       .select("id, created_at, name, email, status")
       .single();
 
     if (insertErr) {
-      return NextResponse.json({ ok: false, message: insertErr.message }, { status: 500 });
+      return NextResponse.json(
+        { ok: false, message: insertErr.message },
+        { status: 500 }
+      );
     }
 
-    // 2) Send confirmation email (but NEVER block the DB insert)
     const from = process.env.RESEND_FROM_EMAIL || "GRCC <onboarding@resend.dev>";
 
     let resendResult: any = null;
@@ -60,7 +72,7 @@ export async function POST(req: Request) {
             <p>
               Your School of Discovery registration has been received successfully.
               Our team will review your application and you will receive a follow-up email
-              regarding your admission status,Thank You.
+              regarding your admission status. Thank you.
             </p>
             <p style="margin-top: 18px">
               Blessings,<br/>
@@ -78,9 +90,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ok: true,
-      inserted,          // PROOF it entered Supabase
-      resend: resendResult, // PROOF Resend accepted it (will include an id)
-      resendError,       // if email failed, you’ll see why
+      inserted,
+      resend: resendResult,
+      resendError,
     });
   } catch (e: any) {
     return NextResponse.json(
