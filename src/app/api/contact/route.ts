@@ -15,7 +15,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Save to database
     const { error } = await supabaseServer.from("contact_messages").insert([
       {
         name: body.name.trim(),
@@ -34,12 +33,14 @@ export async function POST(req: Request) {
 
     const from =
       process.env.RESEND_FROM_EMAIL || "GRCC <onboarding@resend.dev>";
+    const replyTo =
+      process.env.ADMIN_NOTIFY_EMAIL || "gloryrealm2025@gmail.com";
 
-    // 2. Notify admin
     try {
       await resend.emails.send({
         from,
         to: process.env.ADMIN_NOTIFY_EMAIL || "gloryrealm2025@gmail.com",
+        replyTo,
         subject: "New Contact Message — GRCC Website",
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.6;">
@@ -58,11 +59,11 @@ export async function POST(req: Request) {
       console.log("Admin email failed:", err);
     }
 
-    // 3. Auto-reply to sender
     try {
       await resend.emails.send({
         from,
         to: body.email,
+        replyTo,
         subject: "We received your message — GRCC",
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.6;">

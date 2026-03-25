@@ -7,18 +7,24 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   const cookieStore = await cookies();
-const isAdmin = cookieStore.get("grcc_admin")?.value === "1";
+  const isAdmin = cookieStore.get("grcc_admin")?.value === "1";
+
   if (!isAdmin) {
-    return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, message: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
   const { id, decision } = await req.json();
 
   if (!id || !["admitted", "rejected"].includes(decision)) {
-    return NextResponse.json({ ok: false, message: "Invalid request" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, message: "Invalid request" },
+      { status: 400 }
+    );
   }
 
-  // Fetch applicant
   const { data: row, error: readErr } = await supabaseServer
     .from("school_of_discovery")
     .select("id,name,email,status")
@@ -26,22 +32,29 @@ const isAdmin = cookieStore.get("grcc_admin")?.value === "1";
     .single();
 
   if (readErr || !row) {
-    return NextResponse.json({ ok: false, message: readErr?.message || "Not found" }, { status: 404 });
+    return NextResponse.json(
+      { ok: false, message: readErr?.message || "Not found" },
+      { status: 404 }
+    );
   }
 
-  // Update status
   const { error: upErr } = await supabaseServer
     .from("school_of_discovery")
     .update({ status: decision })
     .eq("id", id);
 
   if (upErr) {
-    return NextResponse.json({ ok: false, message: upErr.message }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, message: upErr.message },
+      { status: 500 }
+    );
   }
 
-  // Send email (and copy to admin notify email)
-  const from = process.env.RESEND_FROM_EMAIL || "GRCC <onboarding@resend.dev>";
+  const from =
+    process.env.RESEND_FROM_EMAIL || "GRCC <onboarding@resend.dev>";
   const adminCopy = process.env.ADMIN_NOTIFY_EMAIL;
+  const replyTo =
+    process.env.ADMIN_NOTIFY_EMAIL || "gloryrealm2025@gmail.com";
 
   const applicantEmail = row.email;
   const applicantName = row.name;
@@ -54,80 +67,80 @@ const isAdmin = cookieStore.get("grcc_admin")?.value === "1";
   const html =
     decision === "admitted"
       ? `
-       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-  <h2>Congratulations 🎉</h2>
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2>Congratulations 🎉</h2>
 
-  <p>Dear ${applicantName},</p>
+          <p>Dear ${applicantName},</p>
 
-  <p>
-    We are pleased to inform you that you have been <strong>admitted</strong> into the 
-    <strong>School of Discovery</strong>.
-  </p>
+          <p>
+            We are pleased to inform you that you have been <strong>admitted</strong> into the 
+            <strong>School of Discovery</strong>.
+          </p>
 
-  <p>
-    This program is designed to build you spiritually, strengthen your foundation, 
-    and equip you to live and represent Christ effectively in every area of life.
-  </p>
+          <p>
+            This program is designed to build you spiritually, strengthen your foundation, 
+            and equip you to live and represent Christ effectively in every area of life.
+          </p>
 
-  <hr />
+          <hr />
 
-  <h3>Enrollment Instruction</h3>
+          <h3>Enrollment Instruction</h3>
 
-  <p>
-    To confirm your participation, kindly complete your enrollment by making a payment of:
-  </p>
+          <p>
+            To confirm your participation, kindly complete your enrollment by making a payment of:
+          </p>
 
-  <p style="font-size: 18px; font-weight: bold;">
-    ₦5,000 (Nigeria) <br/>
-    $5 (International Students)
-  </p>
+          <p style="font-size: 18px; font-weight: bold;">
+            ₦5,000 (Nigeria) <br/>
+            $5 (International Students)
+          </p>
 
-  <p>
-    This fee covers program logistics, coordination, certificate, and student support systems.
-  </p>
+          <p>
+            This fee covers program logistics, coordination, certificate, and student support systems.
+          </p>
 
-  <h4>Payment Details</h4>
+          <h4>Payment Details</h4>
 
-  <p>
-    <strong>Account Name:</strong> GLORYREALM CHRISTIAN CENTRE <br/>
-    <strong>Bank:</strong> Access Bank
-  </p>
+          <p>
+            <strong>Account Name:</strong> GLORYREALM CHRISTIAN CENTRE <br/>
+            <strong>Bank:</strong> Access Bank
+          </p>
 
-  <p>
-    <strong>Naira Account:</strong> 1917160885 <br/>
-    <strong>Dollar Account:</strong> 1917918141
-  </p>
+          <p>
+            <strong>Naira Account:</strong> 1917160885 <br/>
+            <strong>Dollar Account:</strong> 1917918141
+          </p>
 
-  <p>
-    After making payment, kindly send your proof of payment by replying to this email.
-  </p>
+          <p>
+            After making payment, kindly send your proof of payment by replying to this email.
+          </p>
 
-  <p>
-    <strong>If you are having any difficulty making payment, please reply to this email and let us know your concerns.</strong>
-  </p>
+          <p>
+            <strong>If you are having any difficulty making payment, please reply to this email and let us know your concerns.</strong>
+          </p>
 
-  <hr />
+          <hr />
 
-  <p>
-    <strong>Important:</strong> Admission is only confirmed after payment.
-  </p>
+          <p>
+            <strong>Important:</strong> Admission is only confirmed after payment.
+          </p>
 
-  <p>
-    Once your payment is verified, you will receive:
-    <br/>• Access to the student dashboard  
-    <br/>• Class schedule and live session link  
-    <br/>• Further onboarding instructions
-  </p>
+          <p>
+            Once your payment is verified, you will receive:
+            <br/>• Access to the student dashboard  
+            <br/>• Class schedule and live session link  
+            <br/>• Further onboarding instructions
+          </p>
 
-  <p>
-    We look forward to having you in this journey.
-  </p>
+          <p>
+            We look forward to having you in this journey.
+          </p>
 
-  <p>
-    Blessings,<br/>
-    <strong>GRCC Admin</strong>
-  </p>
-</div>
+          <p>
+            Blessings,<br/>
+            <strong>GRCC Admin</strong>
+          </p>
+        </div>
       `
       : `
         <div style="font-family: Arial, sans-serif; line-height: 1.6">
@@ -147,25 +160,25 @@ const isAdmin = cookieStore.get("grcc_admin")?.value === "1";
         </div>
       `;
 
-  // Send to applicant (may not deliver until domain verification)
   if (applicantEmail) {
     try {
       await resend.emails.send({
         from,
         to: applicantEmail,
+        replyTo,
         subject,
         html,
       });
     } catch {
-      // ignore to avoid blocking admin action
+      // ignore
     }
   }
 
-  // Always send copy to admin email so you can confirm it worked
   if (adminCopy) {
     await resend.emails.send({
       from,
       to: adminCopy,
+      replyTo,
       subject: `[COPY] ${subject} — ${applicantName}`,
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6">
