@@ -62,7 +62,7 @@ export async function POST(req: Request) {
           </p>
 
           <p style="color:#b91c1c; font-weight:bold;">
-            Deadline: [INSERT DATE HERE]
+            Deadline: April 5th, 2026
           </p>
 
           <p>
@@ -71,7 +71,10 @@ export async function POST(req: Request) {
           </p>
 
           <p>
-            If you are having issues making payment, kindly reply this email.
+            If you are having issues making payment, kindly send us an email to:
+            <br/><strong>gloryrealm2025@gmail.com</strong>
+            
+            And we will be sure to help out.
           </p>
 
           <p>
