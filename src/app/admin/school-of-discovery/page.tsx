@@ -56,8 +56,11 @@ export default function AdminSODPage() {
   const visible = useMemo(() => {
     const text = q.trim().toLowerCase();
     return rows
-      .filter((r) => (filter === "all" ? true : ((r.status || "pending").replaceAll("'", "")) === filter
-))
+      .filter((r) =>
+        filter === "all"
+          ? true
+          : ((r.status || "pending").replaceAll("'", "")) === filter
+      )
       .filter((r) => {
         if (!text) return true;
         return (
@@ -89,6 +92,28 @@ export default function AdminSODPage() {
     alert(`Updated: ${decision}`);
   }
 
+  async function sendFollowUp(id: string) {
+    const ok = confirm("Send follow-up reminder email to this admitted applicant?");
+    if (!ok) return;
+
+    const res = await fetch("/api/admin/sod/follow-up", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data?.ok) {
+      alert(data?.message || "Failed to send follow-up");
+      return;
+    }
+
+    alert("Follow-up email sent ✅");
+  }
+
   async function logout() {
     await fetch("/api/admin/logout", { method: "POST" });
     window.location.href = "/admin";
@@ -109,13 +134,13 @@ export default function AdminSODPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search by name, email, address..."
-                className="w-full md:w-[360px] rounded-lg border px-4 py-3 outline-none focus:border-slate-400"
+                className="w-full rounded-lg border px-4 py-3 outline-none focus:border-slate-400 md:w-[360px]"
               />
 
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as any)}
-                className="rounded-lg border px-4 py-3 bg-white"
+                className="rounded-lg border bg-white px-4 py-3"
               >
                 <option value="pending">Pending</option>
                 <option value="admitted">Admitted</option>
@@ -125,7 +150,7 @@ export default function AdminSODPage() {
 
               <button
                 onClick={load}
-                className="rounded-lg bg-slate-900 px-5 py-3 text-white font-semibold hover:bg-slate-800"
+                className="rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800"
               >
                 Refresh
               </button>
@@ -145,8 +170,8 @@ export default function AdminSODPage() {
             </div>
           ) : null}
 
-          <div className="mt-8 rounded-2xl border overflow-hidden">
-            <div className="bg-slate-50 px-5 py-4 flex items-center justify-between">
+          <div className="mt-8 overflow-hidden rounded-2xl border">
+            <div className="flex items-center justify-between bg-slate-50 px-5 py-4">
               <p className="font-semibold text-slate-900">
                 Applications ({visible.length})
               </p>
@@ -160,7 +185,11 @@ export default function AdminSODPage() {
             ) : visible.length === 0 ? (
               <div className="p-8 text-slate-600">No applications found.</div>
             ) : (
-              <AdminTable rows={visible} onDecide={decide} />
+              <AdminTable
+                rows={visible}
+                onDecide={decide}
+                onSendFollowUp={sendFollowUp}
+              />
             )}
           </div>
         </div>
@@ -172,9 +201,11 @@ export default function AdminSODPage() {
 function AdminTable({
   rows,
   onDecide,
+  onSendFollowUp,
 }: {
   rows: Row[];
   onDecide: (id: string, decision: "admitted" | "rejected") => void;
+  onSendFollowUp: (id: string) => void;
 }) {
   const [activeId, setActiveId] = useState<string>(rows[0]?.id);
 
@@ -194,14 +225,14 @@ function AdminTable({
               <button
                 key={r.id}
                 onClick={() => setActiveId(r.id)}
-                className={`w-full text-left px-5 py-4 border-b hover:bg-slate-50 transition ${
+                className={`w-full border-b px-5 py-4 text-left transition hover:bg-slate-50 ${
                   r.id === active?.id ? "bg-slate-50" : "bg-white"
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-bold text-slate-900">{r.name}</p>
                   <span
-                    className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                    className={`rounded-full px-2 py-1 text-xs font-semibold ${
                       status === "pending"
                         ? "bg-amber-100 text-amber-800"
                         : status === "admitted"
@@ -249,14 +280,14 @@ function AdminTable({
 
             <div className="mt-6">
               <p className="font-semibold text-slate-900">Salvation Experience</p>
-              <div className="mt-2 rounded-lg border bg-slate-50 p-4 text-sm text-slate-700 whitespace-pre-wrap">
+              <div className="mt-2 whitespace-pre-wrap rounded-lg border bg-slate-50 p-4 text-sm text-slate-700">
                 {active.salvation_experience || "—"}
               </div>
             </div>
 
             <div className="mt-6">
               <p className="font-semibold text-slate-900">Expectation</p>
-              <div className="mt-2 rounded-lg border bg-slate-50 p-4 text-sm text-slate-700 whitespace-pre-wrap">
+              <div className="mt-2 whitespace-pre-wrap rounded-lg border bg-slate-50 p-4 text-sm text-slate-700">
                 {active.expectation || "—"}
               </div>
             </div>
@@ -264,17 +295,26 @@ function AdminTable({
             <div className="mt-7 flex flex-wrap gap-3">
               <button
                 onClick={() => onDecide(active.id, "admitted")}
-                className="rounded-lg bg-teal-600 px-5 py-3 text-white font-semibold hover:bg-teal-700"
+                className="rounded-lg bg-teal-600 px-5 py-3 font-semibold text-white hover:bg-teal-700"
               >
                 Admit
               </button>
 
               <button
                 onClick={() => onDecide(active.id, "rejected")}
-                className="rounded-lg bg-red-600 px-5 py-3 text-white font-semibold hover:bg-red-700"
+                className="rounded-lg bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700"
               >
                 Not Admitted
               </button>
+
+              {active.status === "admitted" ? (
+                <button
+                  onClick={() => onSendFollowUp(active.id)}
+                  className="rounded-lg bg-amber-600 px-5 py-3 font-semibold text-white hover:bg-amber-700"
+                >
+                  Send Reminder
+                </button>
+              ) : null}
             </div>
 
             <p className="mt-4 text-xs text-slate-500">
@@ -292,7 +332,7 @@ function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-6 border-b pb-2">
       <span className="text-slate-500">{label}</span>
-      <span className="font-semibold text-slate-900 text-right">{value}</span>
+      <span className="text-right font-semibold text-slate-900">{value}</span>
     </div>
   );
 }
