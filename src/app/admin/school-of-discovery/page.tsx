@@ -28,9 +28,9 @@ export default function AdminSODPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<"all" | "pending" | "admitted" | "rejected">(
-    "pending"
-  );
+  const [filter, setFilter] = useState<
+    "all" | "pending" | "admitted" | "rejected" | "onboarded"
+  >("pending");
 
   async function load() {
     setLoading(true);
@@ -112,6 +112,30 @@ export default function AdminSODPage() {
     }
 
     alert("Follow-up email sent ✅");
+    await load();
+  }
+
+  async function onboard(id: string) {
+    const ok = confirm("Send onboarding email to this student?");
+    if (!ok) return;
+
+    const res = await fetch("/api/admin/sod/onboard", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data?.ok) {
+      alert(data?.message || "Failed to send onboarding");
+      return;
+    }
+
+    alert("Onboarding email sent ✅");
+    await load();
   }
 
   async function logout() {
@@ -144,6 +168,7 @@ export default function AdminSODPage() {
               >
                 <option value="pending">Pending</option>
                 <option value="admitted">Admitted</option>
+                <option value="onboarded">Onboarded</option>
                 <option value="rejected">Rejected</option>
                 <option value="all">All</option>
               </select>
@@ -189,6 +214,7 @@ export default function AdminSODPage() {
                 rows={visible}
                 onDecide={decide}
                 onSendFollowUp={sendFollowUp}
+                onOnboard={onboard}
               />
             )}
           </div>
@@ -202,10 +228,12 @@ function AdminTable({
   rows,
   onDecide,
   onSendFollowUp,
+  onOnboard,
 }: {
   rows: Row[];
   onDecide: (id: string, decision: "admitted" | "rejected") => void;
   onSendFollowUp: (id: string) => void;
+  onOnboard: (id: string) => void;
 }) {
   const [activeId, setActiveId] = useState<string>(rows[0]?.id);
 
@@ -216,7 +244,6 @@ function AdminTable({
 
   return (
     <div className="grid md:grid-cols-2">
-      {/* List */}
       <div className="border-b md:border-b-0 md:border-r">
         <div className="max-h-[520px] overflow-auto">
           {rows.map((r) => {
@@ -237,6 +264,8 @@ function AdminTable({
                         ? "bg-amber-100 text-amber-800"
                         : status === "admitted"
                         ? "bg-teal-100 text-teal-800"
+                        : status === "onboarded"
+                        ? "bg-purple-100 text-purple-800"
                         : "bg-red-100 text-red-800"
                     }`}
                   >
@@ -255,7 +284,6 @@ function AdminTable({
         </div>
       </div>
 
-      {/* Details */}
       <div className="p-6">
         <h3 className="text-xl font-extrabold text-slate-900">Applicant Details</h3>
 
@@ -308,18 +336,28 @@ function AdminTable({
               </button>
 
               {active.status === "admitted" ? (
-                <button
-                  onClick={() => onSendFollowUp(active.id)}
-                  className="rounded-lg bg-amber-600 px-5 py-3 font-semibold text-white hover:bg-amber-700"
-                >
-                  Send Reminder
-                </button>
+                <>
+                  <button
+                    onClick={() => onSendFollowUp(active.id)}
+                    className="rounded-lg bg-amber-600 px-5 py-3 font-semibold text-white hover:bg-amber-700"
+                  >
+                    Send Reminder
+                  </button>
+
+                  <button
+                    onClick={() => onOnboard(active.id)}
+                    className="rounded-lg bg-purple-600 px-5 py-3 font-semibold text-white hover:bg-purple-700"
+                  >
+                    Send Onboarding
+                  </button>
+                </>
               ) : null}
             </div>
 
             <p className="mt-4 text-xs text-slate-500">
-              Note: Until domain verification, decision emails may only deliver to the
-              Resend account email. We also send a copy to ADMIN_NOTIFY_EMAIL.
+              Note: Until domain verification, decision and onboarding emails may only
+              deliver to the Resend account email. We also send a copy or reply path
+              through ADMIN_NOTIFY_EMAIL.
             </p>
           </>
         )}
