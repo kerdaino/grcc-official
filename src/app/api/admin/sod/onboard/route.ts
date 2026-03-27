@@ -50,10 +50,10 @@ export async function POST(req: Request) {
   const replyTo =
     process.env.ADMIN_NOTIFY_EMAIL || "gloryrealm2025@gmail.com";
 
-  const GROUP_LINK = process.env.WHATSAPP_GROUP_LINK;
-  const CHANNEL_LINK = process.env.WHATSAPP_CHANNEL_LINK;
+  const GROUP_LINK = process.env.WHATSAPP_GROUP_LINK?.trim();
+  const CHANNEL_LINK = process.env.WHATSAPP_CHANNEL_LINK?.trim();
   const SUPPORT_EMAIL =
-    process.env.ADMIN_NOTIFY_EMAIL || "gloryrealm2025@gmail.com";
+    process.env.ADMIN_NOTIFY_EMAIL?.trim() || "gloryrealm2025@gmail.com";
 
   if (!GROUP_LINK || !CHANNEL_LINK) {
     return NextResponse.json(
@@ -61,6 +61,10 @@ export async function POST(req: Request) {
         ok: false,
         message:
           "WhatsApp group or channel link is missing. Please set WHATSAPP_GROUP_LINK and WHATSAPP_CHANNEL_LINK in your environment variables.",
+        debug: {
+          hasGroupLink: !!GROUP_LINK,
+          hasChannelLink: !!CHANNEL_LINK,
+        },
       },
       { status: 500 }
     );
