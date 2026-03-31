@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 type ToastType = "success" | "error";
 
-const FORM_OPEN = true;
+const FORM_OPEN = false;
 
 function Toast({
   open,

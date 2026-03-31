@@ -3,7 +3,7 @@ import { supabaseServer } from "@/lib/supabaseServer";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FORM_OPEN = true;
+const FORM_OPEN = false;
 
 export async function POST(req: Request) {
   if (!FORM_OPEN) {
