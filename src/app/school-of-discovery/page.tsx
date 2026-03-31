@@ -212,7 +212,11 @@ export default function SchoolOfDiscoveryPage() {
 
       <PageHero
         title="School of Discovery"
-        subtitle="Registration for this cohort is now closed. Stay connected for the next intake."
+        subtitle={
+          FORM_OPEN
+            ? "Registration has been temporarily reopened for a short period for late applicants."
+            : "Registration for this cohort is now closed. Stay connected for the next intake."
+        }
         image="/images/sod.jpeg"
       />
 
@@ -249,56 +253,60 @@ export default function SchoolOfDiscoveryPage() {
               </h2>
 
               <ul className="mt-6 space-y-3 text-slate-700">
-                <li className="flex gap-3">
-                  <span className="mt-1 text-teal-600">
-                    <i className="fa-solid fa-circle-check" />
-                  </span>
-                  Applications for this cohort have now closed.
-                </li>
-                <li className="flex gap-3">
-                  <span className="mt-1 text-teal-600">
-                    <i className="fa-solid fa-circle-check" />
-                  </span>
-                  Submitted applications are currently under review.
-                </li>
-                <li className="flex gap-3">
-                  <span className="mt-1 text-teal-600">
-                    <i className="fa-solid fa-circle-check" />
-                  </span>
-                  Admitted applicants will receive further instructions by email.
-                </li>
+                {FORM_OPEN ? (
+                  <>
+                    <li className="flex gap-3">
+                      <span className="mt-1 text-teal-600">
+                        <i className="fa-solid fa-circle-check" />
+                      </span>
+                      Registration has been temporarily reopened for late applicants.
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="mt-1 text-teal-600">
+                        <i className="fa-solid fa-circle-check" />
+                      </span>
+                      Please complete the form accurately before submission.
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="mt-1 text-teal-600">
+                        <i className="fa-solid fa-circle-check" />
+                      </span>
+                      You will receive your admission update by email after review.
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li className="flex gap-3">
+                      <span className="mt-1 text-teal-600">
+                        <i className="fa-solid fa-circle-check" />
+                      </span>
+                      Applications for this cohort have now closed.
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="mt-1 text-teal-600">
+                        <i className="fa-solid fa-circle-check" />
+                      </span>
+                      Submitted applications are currently under review.
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="mt-1 text-teal-600">
+                        <i className="fa-solid fa-circle-check" />
+                      </span>
+                      Admitted applicants will receive further instructions by email.
+                    </li>
+                  </>
+                )}
               </ul>
             </div>
           </div>
 
           <div className="rounded-2xl border bg-white p-8 shadow-sm">
-            <h3 className="text-lg font-extrabold text-slate-900">
-              Registration Closed
-            </h3>
-
-            <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-                <i className="fa-solid fa-lock text-xl" />
-              </div>
-
-              <h4 className="mt-4 text-xl font-extrabold text-slate-900">
-                This Cohort Is Closed
-              </h4>
-
-              <p className="mt-3 leading-relaxed text-slate-700">
-                Registration for the current School of Discovery cohort has now
-                closed. We appreciate your interest and encourage you to stay
-                connected for the next intake.
-              </p>
-
-              <p className="mt-4 text-sm text-slate-600">
-                If you already submitted your application, kindly check your
-                email for your admission update.
-              </p>
-            </div>
-
             {FORM_OPEN ? (
               <>
+                <h3 className="text-lg font-extrabold text-slate-900">
+                  Register Now
+                </h3>
+
                 {error ? (
                   <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
                     {error}
@@ -317,10 +325,203 @@ export default function SchoolOfDiscoveryPage() {
                 ) : null}
 
                 <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-                  {/* form fields remain here if you later reopen */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900">
+                      Name <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      value={form.fullName}
+                      onChange={(e) => updateField("fullName", e.target.value)}
+                      className="mt-2 w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                      placeholder="Full name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900">
+                      Email Address <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      value={form.email}
+                      onChange={(e) => updateField("email", e.target.value)}
+                      className="mt-2 w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                      placeholder="Email Address"
+                      type="email"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900">
+                      Address or Country <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      value={form.addressOrCountry}
+                      onChange={(e) => updateField("addressOrCountry", e.target.value)}
+                      className="mt-2 w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                      placeholder="Your address or country"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900">
+                      Date of Birth <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={form.dateOfBirth}
+                      onChange={(e) => updateField("dateOfBirth", e.target.value)}
+                      className="mt-2 w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900">
+                      Salvation Experience <span className="text-red-600">*</span>
+                    </label>
+                    <textarea
+                      value={form.salvationExperience}
+                      onChange={(e) => updateField("salvationExperience", e.target.value)}
+                      className="mt-2 min-h-[110px] w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                      placeholder="Briefly share your salvation experience..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900">
+                      Church Attending <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      value={form.churchAttending}
+                      onChange={(e) => updateField("churchAttending", e.target.value)}
+                      className="mt-2 w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                      placeholder="Name of your church"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900">
+                      Do you have spiritual covering? <span className="text-red-600">*</span>
+                    </label>
+                    <select
+                      value={form.hasSpiritualCovering}
+                      onChange={(e) => updateField("hasSpiritualCovering", e.target.value)}
+                      className="mt-2 w-full rounded-lg border bg-white px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                    >
+                      <option value="">Select</option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900">
+                      Are you a worker in your place of worship? <span className="text-red-600">*</span>
+                    </label>
+                    <select
+                      value={form.isWorker}
+                      onChange={(e) => updateField("isWorker", e.target.value)}
+                      className="mt-2 w-full rounded-lg border bg-white px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                    >
+                      <option value="">Select</option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900">
+                      What is your expectation? <span className="text-red-600">*</span>
+                    </label>
+                    <textarea
+                      value={form.expectation}
+                      onChange={(e) => updateField("expectation", e.target.value)}
+                      className="mt-2 min-h-[110px] w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                      placeholder="What do you expect from School of Discovery?"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900">
+                      Have you attended any theological, bible, or discipleship school before?{" "}
+                      <span className="text-red-600">*</span>
+                    </label>
+                    <select
+                      value={form.attendedBibleSchoolBefore}
+                      onChange={(e) => {
+                        updateField("attendedBibleSchoolBefore", e.target.value);
+                        if (e.target.value !== "Yes") updateField("bibleSchoolName", "");
+                      }}
+                      className="mt-2 w-full rounded-lg border bg-white px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                    >
+                      <option value="">Select</option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                  </div>
+
+                  {form.attendedBibleSchoolBefore === "Yes" ? (
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-900">
+                        Name of the School Attended <span className="text-red-600">*</span>
+                      </label>
+                      <input
+                        value={form.bibleSchoolName}
+                        onChange={(e) => updateField("bibleSchoolName", e.target.value)}
+                        className="mt-2 w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                        placeholder="e.g., GRCC Discipleship School"
+                      />
+                    </div>
+                  ) : null}
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900">
+                      Who is a disciple? <span className="text-red-600">*</span>
+                    </label>
+                    <textarea
+                      value={form.discipleshipInfo}
+                      onChange={(e) => updateField("discipleshipInfo", e.target.value)}
+                      className="mt-2 min-h-[110px] w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                      placeholder="In your understanding, who is a disciple?"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full rounded-lg bg-purple-600 px-5 py-3 font-semibold text-white hover:bg-purple-700 disabled:opacity-60"
+                  >
+                    {loading ? "Submitting..." : "Submit Registration"}
+                  </button>
                 </form>
               </>
-            ) : null}
+            ) : (
+              <>
+                <h3 className="text-lg font-extrabold text-slate-900">
+                  Registration Closed
+                </h3>
+
+                <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                    <i className="fa-solid fa-lock text-xl" />
+                  </div>
+
+                  <h4 className="mt-4 text-xl font-extrabold text-slate-900">
+                    This Cohort Is Closed
+                  </h4>
+
+                  <p className="mt-3 leading-relaxed text-slate-700">
+                    Registration for the current School of Discovery cohort has now
+                    closed. We appreciate your interest and encourage you to stay
+                    connected for the next intake.
+                  </p>
+
+                  <p className="mt-4 text-sm text-slate-600">
+                    If you already submitted your application, kindly check your
+                    email for your admission update.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
