@@ -52,40 +52,88 @@ export async function POST(req: Request) {
       subject: "Reminder — School of Discovery Enrollment",
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2>Reminder — School of Discovery Enrollment</h2>
+  <h2>Reminder — School of Discovery Enrollment</h2>
 
-          <p>Dear ${applicant.name},</p>
+  <p>Dear ${applicant.name},</p>
 
-          <p>
-            This is a reminder to complete your enrollment for the 
-            <strong>School of Discovery</strong>.
-          </p>
+  <p>
+    This is a reminder to complete your enrollment for the
+    <strong>School of Discovery</strong>.
+  </p>
 
-          <p style="color:#b91c1c; font-weight:bold;">
-            Deadline: April 5th, 2026
-          </p>
+  <p>
+    We are excited about your admission, and we look forward to having you
+    in this transformational journey.
+  </p>
 
-          <p>
-            After payment, send proof to:
-            <br/><strong>gloryrealm2025@gmail.com</strong>
-          </p>
+  <hr />
 
-          <p>
-            If you are having issues making payment, kindly send us an email to:
-            <br/><strong>gloryrealm2025@gmail.com</strong>
-            
-            And we will be sure to help out.
-          </p>
+  <h3>Payment Deadline</h3>
 
-          <p>
-            Only students who complete payment will receive access.
-          </p>
+  <p>
+    Kindly note that your admission slot will only be secured after payment.
+  </p>
 
-          <p>
-            Blessings,<br/>
-            <strong>GRCC Admin</strong>
-          </p>
-        </div>
+  <p style="font-size: 16px; font-weight: bold; color: #b91c1c;">
+    Payment closes today, April 5, 2026.
+  </p>
+
+  <p>
+    If payment is not made today, your slot may no longer be guaranteed.
+  </p>
+
+  <hr />
+
+  <h3>Payment Details</h3>
+
+  <p style="font-size: 16px; font-weight: bold;">
+    ₦5,000 (Nigeria) <br />
+    $5 (International Students)
+  </p>
+
+  <p>
+    <strong>Account Name:</strong> GLORYREALM CHRISTIAN CENTRE<br />
+    <strong>Bank:</strong> Access Bank
+  </p>
+
+  <p>
+    <strong>Naira Account:</strong> 1917160885<br />
+    <strong>Dollar Account:</strong> 1917918141
+  </p>
+
+  <hr />
+
+  <h3>Next Step</h3>
+
+  <p>
+    After payment, kindly send your proof of payment to:
+  </p>
+
+  <p style="font-weight: bold;">
+    gloryrealm2025@gmail.com
+  </p>
+
+  <p>
+    If you are having any difficulty making payment or have any concerns,
+    please reply to this email or send a message to the email above.
+  </p>
+
+  <hr />
+
+  <p>
+    <strong>Important:</strong> Only students who complete payment will receive
+    access to the class sessions, LMS login details, and other onboarding materials.
+  </p>
+
+  <p>
+    We look forward to having you.
+  </p>
+
+  <p>
+    Blessings,<br />
+    <strong>GRCC Admin</strong>
+  </p>
+</div>
       `,
     });
 

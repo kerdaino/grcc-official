@@ -1,8 +1,5 @@
 "use client";
 
-// Admin dashboard: view School of Discovery applications + approve/reject.
-// Protected by cookie set at /api/admin/login.
-
 import PageHero from "@/components/PageHero";
 import { useEffect, useMemo, useState } from "react";
 
@@ -138,6 +135,29 @@ export default function AdminSODPage() {
     await load();
   }
 
+  async function createLMSAccess(id: string) {
+    const ok = confirm("Create LMS access and send login details?");
+    if (!ok) return;
+
+    const res = await fetch("/api/admin/sod/create-lms-access", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data?.ok) {
+      alert(data?.message || "Failed to create LMS access");
+      return;
+    }
+
+    alert("LMS access created and login details sent ✅");
+    await load();
+  }
+
   async function logout() {
     await fetch("/api/admin/logout", { method: "POST" });
     window.location.href = "/admin";
@@ -215,6 +235,7 @@ export default function AdminSODPage() {
                 onDecide={decide}
                 onSendFollowUp={sendFollowUp}
                 onOnboard={onboard}
+                onCreateLMSAccess={createLMSAccess}
               />
             )}
           </div>
@@ -229,11 +250,13 @@ function AdminTable({
   onDecide,
   onSendFollowUp,
   onOnboard,
+  onCreateLMSAccess,
 }: {
   rows: Row[];
   onDecide: (id: string, decision: "admitted" | "rejected") => void;
   onSendFollowUp: (id: string) => void;
   onOnboard: (id: string) => void;
+  onCreateLMSAccess: (id: string) => void;
 }) {
   const [activeId, setActiveId] = useState<string>(rows[0]?.id);
 
@@ -352,12 +375,20 @@ function AdminTable({
                   </button>
                 </>
               ) : null}
+
+              {active.status === "onboarded" ? (
+                <button
+                  onClick={() => onCreateLMSAccess(active.id)}
+                  className="rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800"
+                >
+                  Create LMS Access
+                </button>
+              ) : null}
             </div>
 
             <p className="mt-4 text-xs text-slate-500">
-              Note: Until domain verification, decision and onboarding emails may only
-              deliver to the Resend account email. We also send a copy or reply path
-              through ADMIN_NOTIFY_EMAIL.
+              Note: Decision, onboarding, and LMS access emails use your configured
+              admin/support email as reply destination.
             </p>
           </>
         )}

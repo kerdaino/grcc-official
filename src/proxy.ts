@@ -4,22 +4,28 @@ import type { NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow admin login page
+  const adminCookie = request.cookies.get("grcc_admin");
+  const lmsCookie = request.cookies.get("grcc_lms_student");
+
   if (pathname === "/admin") {
     return NextResponse.next();
   }
 
-  const adminCookie = request.cookies.get("grcc_admin");
-
-  // Protect admin routes
   if (!adminCookie && pathname.startsWith("/admin")) {
-    const loginUrl = new URL("/admin", request.url);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/admin", request.url));
+  }
+
+  if (
+    pathname.startsWith("/lms") &&
+    pathname !== "/lms/login" &&
+    !lmsCookie
+  ) {
+    return NextResponse.redirect(new URL("/lms/login", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/lms/:path*"],
 };

@@ -53,6 +53,34 @@ const adminLinks = [
   color: "from-cyan-600 to-sky-600",
   icon: "fa-solid fa-envelope-open-text",
 },
+{
+  title: "LMS Schedule",
+  desc: "Manage School of Discovery schedule, class dates, and session details.",
+  href: "/admin/lms/schedule",
+  color: "from-violet-600 to-purple-600",
+  icon: "fa-solid fa-calendar-days",
+},
+{
+  title: "LMS Live Class",
+  desc: "Manage current Zoom class link, meeting details, and live status.",
+  href: "/admin/lms/live-class",
+  color: "from-emerald-600 to-teal-600",
+  icon: "fa-solid fa-video",
+},
+{
+  title: "LMS Recordings",
+  desc: "Manage and publish School of Discovery class recordings.",
+  href: "/admin/lms/recordings",
+  color: "from-pink-600 to-rose-600",
+  icon: "fa-solid fa-circle-play",
+},
+{
+  title: "LMS Quiz",
+  desc: "Create quizzes and add student assessment questions.",
+  href: "/admin/lms/quiz",
+  color: "from-amber-500 to-orange-600",
+  icon: "fa-solid fa-file-pen",
+},
 ];
 
 export default function AdminDashboardPage() {

@@ -21,6 +21,7 @@ const nav = [
   { name: "Blog", href: "/blog" },
   { name: "Contact", href: "/contact" },
   { name: "School of Discovery", href: "/school-of-discovery" },
+  { name: "lms", href: "/lms" },
 ];
 
 export default function Navbar() {
