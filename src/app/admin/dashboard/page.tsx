@@ -81,6 +81,27 @@ const adminLinks = [
   color: "from-amber-500 to-orange-600",
   icon: "fa-solid fa-file-pen",
 },
+{
+  title: "LMS Final Exam",
+  desc: "Create and manage final exam questions for students.",
+  href: "/admin/lms/exam",
+  color: "from-blue-600 to-indigo-600",
+  icon: "fa-solid fa-graduation-cap",
+},
+{
+  title: "Quiz Results",
+  desc: "View quiz submissions and student scores.",
+  href: "/admin/lms/quiz/submissions",
+  color: "from-emerald-600 to-teal-600",
+  icon: "fa-solid fa-chart-column",
+},
+{
+  title: "Final Exam Results",
+  desc: "View final exam submissions and student scores.",
+  href: "/admin/lms/exam/submissions",
+  color: "from-blue-600 to-indigo-600",
+  icon: "fa-solid fa-square-poll-vertical",
+},
 ];
 
 export default function AdminDashboardPage() {
