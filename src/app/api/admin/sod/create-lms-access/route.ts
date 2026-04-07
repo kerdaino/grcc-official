@@ -112,7 +112,7 @@ export async function POST(req: Request) {
 
   const lmsUrl =
     process.env.LMS_LOGIN_URL ||
-    `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/lms/login`;
+    `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.grccglobal.org"}/lms/login`;
 
   try {
     await resend.emails.send({
