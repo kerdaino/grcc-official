@@ -7,7 +7,9 @@ import LMSHeader from "@/components/lms/LMSHeader";
 type RecordingRow = {
   id: string;
   title: string;
-  recording_url: string;
+  video_type: string | null;
+  recording_url: string | null;
+  embed_code: string | null;
   session_date: string | null;
   instructor: string | null;
   description: string | null;
@@ -54,7 +56,7 @@ export default function LMSRecordingsPage() {
         ) : rows.length === 0 ? (
           <p className="text-slate-600">No recordings have been published yet.</p>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {rows.map((row) => (
               <div key={row.id} className="rounded-xl border bg-slate-50 p-5">
                 <h3 className="text-lg font-bold text-slate-900">{row.title}</h3>
@@ -77,14 +79,25 @@ export default function LMSRecordingsPage() {
                   </p>
                 ) : null}
 
-                <a
-                  href={row.recording_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-4 inline-flex rounded-xl bg-purple-600 px-4 py-3 font-semibold text-white hover:bg-purple-700"
-                >
-                  Watch Recording
-                </a>
+                {row.video_type === "embed" && row.embed_code ? (
+                  <div className="mt-4 overflow-hidden rounded-xl border bg-black">
+                    <div
+                      className="recording-embed [&_iframe]:aspect-video [&_iframe]:w-full [&_iframe]:border-0"
+                      dangerouslySetInnerHTML={{ __html: row.embed_code }}
+                    />
+                  </div>
+                ) : row.recording_url ? (
+                  <a
+                    href={row.recording_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-4 inline-flex rounded-xl bg-purple-600 px-4 py-3 font-semibold text-white hover:bg-purple-700"
+                  >
+                    Watch Recording
+                  </a>
+                ) : (
+                  <p className="mt-4 text-slate-600">No recording available.</p>
+                )}
               </div>
             ))}
           </div>

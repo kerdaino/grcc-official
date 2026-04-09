@@ -6,7 +6,9 @@ import { useEffect, useState } from "react";
 type RecordingRow = {
   id: string;
   title: string;
-  recording_url: string;
+  video_type: string | null;
+  recording_url: string | null;
+  embed_code: string | null;
   session_date: string | null;
   instructor: string | null;
   description: string | null;
@@ -20,7 +22,9 @@ export default function AdminLMSRecordingsPage() {
 
   const [form, setForm] = useState({
     title: "",
+    video_type: "url",
     recording_url: "",
+    embed_code: "",
     session_date: "",
     instructor: "",
     description: "",
@@ -70,7 +74,9 @@ export default function AdminLMSRecordingsPage() {
 
     setForm({
       title: "",
+      video_type: "url",
       recording_url: "",
+      embed_code: "",
       session_date: "",
       instructor: "",
       description: "",
@@ -130,14 +136,36 @@ export default function AdminLMSRecordingsPage() {
                   className="w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
                 />
 
-                <input
-                  value={form.recording_url}
+                <select
+                  value={form.video_type}
                   onChange={(e) =>
-                    setForm((p) => ({ ...p, recording_url: e.target.value }))
+                    setForm((p) => ({ ...p, video_type: e.target.value }))
                   }
-                  placeholder="Recording URL"
-                  className="w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
-                />
+                  className="w-full rounded-lg border bg-white px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                >
+                  <option value="url">Video URL</option>
+                  <option value="embed">Embed Code</option>
+                </select>
+
+                {form.video_type === "url" ? (
+                  <input
+                    value={form.recording_url}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, recording_url: e.target.value }))
+                    }
+                    placeholder="Recording URL"
+                    className="w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                  />
+                ) : (
+                  <textarea
+                    value={form.embed_code}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, embed_code: e.target.value }))
+                    }
+                    placeholder="Paste Vimeo or video embed code here"
+                    className="min-h-[140px] w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                  />
+                )}
 
                 <input
                   type="date"
@@ -189,23 +217,36 @@ export default function AdminLMSRecordingsPage() {
                   {rows.map((row) => (
                     <div key={row.id} className="rounded-xl border bg-slate-50 p-5">
                       <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <h3 className="text-lg font-bold text-slate-900">
                             {row.title}
                           </h3>
+
                           {row.session_date ? (
                             <p className="mt-1 text-sm text-slate-600">
                               Date: {row.session_date}
                             </p>
                           ) : null}
+
                           {row.instructor ? (
                             <p className="mt-1 text-sm text-slate-600">
                               Instructor: {row.instructor}
                             </p>
                           ) : null}
-                          <p className="mt-1 break-all text-sm text-slate-600">
-                            {row.recording_url}
+
+                          <p className="mt-1 text-sm font-semibold text-slate-700">
+                            Type: {row.video_type === "embed" ? "Embed Code" : "Video URL"}
                           </p>
+
+                          {row.video_type === "embed" ? (
+                            <p className="mt-1 text-sm text-slate-600">
+                              Embedded video ready
+                            </p>
+                          ) : (
+                            <p className="mt-1 break-all text-sm text-slate-600">
+                              {row.recording_url || "—"}
+                            </p>
+                          )}
                         </div>
 
                         <button

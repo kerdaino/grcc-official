@@ -15,9 +15,25 @@ export async function POST(req: Request) {
 
   const body = await req.json();
 
-  if (!body?.title?.trim() || !body?.recording_url?.trim()) {
+  const videoType = body?.video_type === "embed" ? "embed" : "url";
+
+  if (!body?.title?.trim()) {
     return NextResponse.json(
-      { ok: false, message: "Title and recording URL are required." },
+      { ok: false, message: "Title is required." },
+      { status: 400 }
+    );
+  }
+
+  if (videoType === "url" && !body?.recording_url?.trim()) {
+    return NextResponse.json(
+      { ok: false, message: "Recording URL is required." },
+      { status: 400 }
+    );
+  }
+
+  if (videoType === "embed" && !body?.embed_code?.trim()) {
+    return NextResponse.json(
+      { ok: false, message: "Embed code is required." },
       { status: 400 }
     );
   }
@@ -25,7 +41,9 @@ export async function POST(req: Request) {
   const { error } = await supabaseServer.from("sod_recordings").insert([
     {
       title: body.title.trim(),
-      recording_url: body.recording_url.trim(),
+      video_type: videoType,
+      recording_url: videoType === "url" ? body.recording_url.trim() : "",
+      embed_code: videoType === "embed" ? body.embed_code.trim() : "",
       session_date: body.session_date || null,
       instructor: body.instructor?.trim() || "",
       description: body.description?.trim() || "",
