@@ -6,7 +6,6 @@ import { useState } from "react";
 export default function CreateSermonPage() {
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadingAudio, setUploadingAudio] = useState(false);
   const [msg, setMsg] = useState("");
 
   const [form, setForm] = useState({
@@ -49,31 +48,6 @@ export default function CreateSermonPage() {
     }
 
     set("thumbnail_url", data.url);
-  }
-
-  async function handleAudioChange(file: File | null) {
-    if (!file) return;
-
-    setUploadingAudio(true);
-    setMsg("");
-
-    const body = new FormData();
-    body.append("file", file);
-
-    const res = await fetch("/api/admin/sermons/upload-audio", {
-      method: "POST",
-      body,
-    });
-
-    const data = await res.json().catch(() => null);
-    setUploadingAudio(false);
-
-    if (!res.ok || !data?.ok) {
-      setMsg(data?.message || "Audio upload failed.");
-      return;
-    }
-
-    set("audio_url", data.url);
   }
 
   async function submit(e: React.FormEvent) {
@@ -164,35 +138,11 @@ export default function CreateSermonPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-slate-900">
-                Audio File
-              </label>
-
-              <input
-                type="file"
-                accept="audio/*"
-                onChange={(e) => handleAudioChange(e.target.files?.[0] || null)}
-                className="mt-2 w-full rounded-lg border px-4 py-3 text-slate-900"
-              />
-
-              {uploadingAudio ? (
-                <p className="mt-2 text-sm text-slate-600">Uploading audio...</p>
-              ) : null}
-
-              {form.audio_url ? (
-                <audio controls className="mt-4 w-full">
-                  <source src={form.audio_url} />
-                  Your browser does not support audio playback.
-                </audio>
-              ) : null}
-
-              <Input
-                label="Audio URL or Telegram Post Link (optional)"
-                value={form.audio_url}
-                onChange={(v) => set("audio_url", v)}
-              />
-            </div>
+            <Input
+              label="Telegram Audio Post Link or Audio URL (optional)"
+              value={form.audio_url}
+              onChange={(v) => set("audio_url", v)}
+            />
 
             <label className="flex items-center gap-3 text-slate-900 font-medium">
               <input
@@ -204,7 +154,7 @@ export default function CreateSermonPage() {
             </label>
 
             <button
-              disabled={loading || uploadingImage || uploadingAudio}
+              disabled={loading || uploadingImage}
               className="rounded-lg bg-fuchsia-600 px-6 py-3 font-semibold text-white hover:bg-fuchsia-700 disabled:opacity-60"
             >
               {loading ? "Creating..." : "Create Sermon"}

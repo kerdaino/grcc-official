@@ -1,6 +1,7 @@
 import PageHero from "@/components/PageHero";
 import Link from "next/link";
 import { supabaseServer } from "@/lib/supabaseServer";
+import TelegramPostEmbed from "@/components/TelegramPostEmbed";
 
 function getYouTubeId(url: string) {
   const watch = url.match(/[?&]v=([^&]+)/);
@@ -15,13 +16,13 @@ function getYouTubeId(url: string) {
   return "";
 }
 
-function getTelegramEmbedUrl(url: string) {
+function isTelegramPostUrl(url: string) {
   try {
     const parsed = new URL(url);
     const host = parsed.hostname.replace(/^www\./, "");
 
     if (host !== "t.me" && host !== "telegram.me") {
-      return "";
+      return false;
     }
 
     const parts = parsed.pathname.split("/").filter(Boolean);
@@ -29,14 +30,9 @@ function getTelegramEmbedUrl(url: string) {
       parts.shift();
     }
 
-    if (parts.length < 2) {
-      return "";
-    }
-
-    const [channel, messageId] = parts;
-    return `https://t.me/${channel}/${messageId}?embed=1`;
+    return parts.length >= 2;
   } catch {
-    return "";
+    return false;
   }
 }
 
@@ -75,7 +71,7 @@ export default async function SermonSinglePage({
   }
 
   const youtubeId = s.youtube_url ? getYouTubeId(s.youtube_url) : "";
-  const telegramEmbedUrl = s.audio_url ? getTelegramEmbedUrl(s.audio_url) : "";
+  const hasTelegramAudioPost = s.audio_url ? isTelegramPostUrl(s.audio_url) : false;
 
   return (
     <main>
@@ -111,13 +107,9 @@ export default async function SermonSinglePage({
                 />
               </div>
             </div>
-          ) : telegramEmbedUrl ? (
-            <div className="mt-6 overflow-hidden rounded-2xl border bg-white">
-              <iframe
-                className="min-h-[260px] w-full"
-                src={telegramEmbedUrl}
-                title={`${s.title} on Telegram`}
-              />
+          ) : hasTelegramAudioPost ? (
+            <div className="mt-6 overflow-hidden rounded-2xl border bg-white p-4">
+              <TelegramPostEmbed url={s.audio_url} />
             </div>
           ) : s.audio_url ? (
             <div className="mt-6 rounded-2xl border bg-slate-50 p-6">
