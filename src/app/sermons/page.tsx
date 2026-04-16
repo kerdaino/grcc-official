@@ -2,6 +2,8 @@ import PageHero from "@/components/PageHero";
 import Link from "next/link";
 import { supabaseServer } from "@/lib/supabaseServer";
 
+export const dynamic = "force-dynamic";
+
 type Sermon = {
   id: string;
   created_at: string;
