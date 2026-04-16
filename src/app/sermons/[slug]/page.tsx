@@ -72,6 +72,8 @@ export default async function SermonSinglePage({
 
   const youtubeId = s.youtube_url ? getYouTubeId(s.youtube_url) : "";
   const hasTelegramAudioPost = s.audio_url ? isTelegramPostUrl(s.audio_url) : false;
+  const hasDirectAudioUrl = !!s.audio_url && !hasTelegramAudioPost;
+  const hasMedia = !!youtubeId || hasTelegramAudioPost || hasDirectAudioUrl;
 
   return (
     <main>
@@ -107,11 +109,16 @@ export default async function SermonSinglePage({
                 />
               </div>
             </div>
-          ) : hasTelegramAudioPost ? (
+          ) : null}
+
+          {hasTelegramAudioPost ? (
             <div className="mt-6 overflow-hidden rounded-2xl border bg-white p-4">
+              <h2 className="mb-4 text-lg font-bold text-slate-900">Telegram Audio</h2>
               <TelegramPostEmbed url={s.audio_url} />
             </div>
-          ) : s.audio_url ? (
+          ) : null}
+
+          {hasDirectAudioUrl ? (
             <div className="mt-6 rounded-2xl border bg-slate-50 p-6">
               <h2 className="text-lg font-bold text-slate-900">Audio Sermon</h2>
               <audio controls className="mt-4 w-full">
@@ -127,11 +134,13 @@ export default async function SermonSinglePage({
                 Open audio link
               </a>
             </div>
-          ) : (
+          ) : null}
+
+          {!hasMedia ? (
             <div className="mt-6 rounded-2xl border bg-slate-50 p-10 text-center text-slate-600">
               No video or audio attached yet.
             </div>
-          )}
+          ) : null}
 
           {s.summary ? (
             <div className="mt-8 rounded-2xl border bg-white p-6">
