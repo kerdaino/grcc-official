@@ -11,6 +11,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
+  const durationMinutes = Number(body?.duration_minutes);
 
   if (!body?.title?.trim()) {
     return NextResponse.json({ ok: false, message: "Quiz title is required." }, { status: 400 });
@@ -20,6 +21,10 @@ export async function POST(req: Request) {
     {
       title: body.title.trim(),
       description: body.description?.trim() || "",
+      duration_minutes:
+        Number.isFinite(durationMinutes) && durationMinutes > 0
+          ? Math.floor(durationMinutes)
+          : 20,
       is_published: body.is_published ?? true,
     },
   ]);

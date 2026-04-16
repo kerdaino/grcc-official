@@ -13,10 +13,31 @@ export async function POST(req: Request) {
   const body = await req.json();
   const quizId = body?.quiz_id;
   const answers = body?.answers || {};
+  const malpracticeFlags = Math.max(0, Number(body?.malpractice_flags) || 0);
 
   if (!quizId) {
     return NextResponse.json({ ok: false, message: "Missing quiz ID." }, { status: 400 });
   }
+
+  const { data: quiz, error: quizError } = await supabaseServer
+    .from("sod_quizzes")
+    .select("id, is_published, duration_minutes")
+    .eq("id", quizId)
+    .eq("is_published", true)
+    .maybeSingle();
+
+  if (quizError) {
+    return NextResponse.json({ ok: false, message: quizError.message }, { status: 500 });
+  }
+
+  if (!quiz) {
+    return NextResponse.json({ ok: false, message: "Quiz not found." }, { status: 404 });
+  }
+
+  const durationMinutes =
+    typeof quiz.duration_minutes === "number" && quiz.duration_minutes > 0
+      ? quiz.duration_minutes
+      : 20;
 
   const { data: questions, error } = await supabaseServer
     .from("sod_quiz_questions")
@@ -32,21 +53,72 @@ export async function POST(req: Request) {
 
   const { data: submission, error: submissionError } = await supabaseServer
     .from("sod_quiz_submissions")
-    .insert([
-      {
-        quiz_id: quizId,
-        student_id: studentId,
-        score: 0,
-        total: rows.length,
-      },
-    ])
-    .select("id")
-    .single();
+    .select("id, score, total, started_at, submitted_at, malpractice_flags")
+    .eq("quiz_id", quizId)
+    .eq("student_id", studentId)
+    .maybeSingle();
 
-  if (submissionError || !submission) {
+  if (submissionError) {
     return NextResponse.json(
-      { ok: false, message: submissionError?.message || "Failed to create submission." },
+      { ok: false, message: submissionError.message },
       { status: 500 }
+    );
+  }
+
+  if (submission?.submitted_at) {
+    return NextResponse.json(
+      {
+        ok: false,
+        message: "You have already completed this quiz.",
+        score: submission.score || 0,
+        total: submission.total || rows.length,
+        already_submitted: true,
+      },
+      { status: 409 }
+    );
+  }
+
+  let activeSubmission = submission;
+
+  if (!activeSubmission) {
+    const startedAt = new Date().toISOString();
+    const { data: createdSubmission, error: createError } = await supabaseServer
+      .from("sod_quiz_submissions")
+      .insert([
+        {
+          quiz_id: quizId,
+          student_id: studentId,
+          score: 0,
+          total: rows.length,
+          started_at: startedAt,
+          malpractice_flags: malpracticeFlags,
+        },
+      ])
+      .select("id, score, total, started_at, submitted_at, malpractice_flags")
+      .single();
+
+    if (createError || !createdSubmission) {
+      return NextResponse.json(
+        { ok: false, message: createError?.message || "Failed to create submission." },
+        { status: 500 }
+      );
+    }
+
+    activeSubmission = createdSubmission;
+  }
+
+  const startedAt = activeSubmission.started_at || new Date().toISOString();
+  const deadline =
+    new Date(startedAt).getTime() + durationMinutes * 60 * 1000;
+
+  if (Number.isNaN(deadline)) {
+    return NextResponse.json({ ok: false, message: "Invalid quiz timing data." }, { status: 500 });
+  }
+
+  if (Date.now() > deadline) {
+    return NextResponse.json(
+      { ok: false, message: "Quiz time has expired." },
+      { status: 409 }
     );
   }
 
@@ -58,12 +130,21 @@ export async function POST(req: Request) {
     if (isCorrect) score += 1;
 
     return {
-      submission_id: submission.id,
+      submission_id: activeSubmission.id,
       question_id: q.id,
       selected_option: selected || "",
       is_correct: !!isCorrect,
     };
   });
+
+  const { error: deleteAnswersError } = await supabaseServer
+    .from("sod_quiz_answers")
+    .delete()
+    .eq("submission_id", activeSubmission.id);
+
+  if (deleteAnswersError) {
+    return NextResponse.json({ ok: false, message: deleteAnswersError.message }, { status: 500 });
+  }
 
   const { error: answersError } = await supabaseServer
     .from("sod_quiz_answers")
@@ -75,8 +156,18 @@ export async function POST(req: Request) {
 
   const { error: updateError } = await supabaseServer
     .from("sod_quiz_submissions")
-    .update({ score })
-    .eq("id", submission.id);
+    .update({
+      score,
+      total: rows.length,
+      started_at: startedAt,
+      submitted_at: new Date().toISOString(),
+      malpractice_flags: Math.max(
+        malpracticeFlags,
+        Number(activeSubmission.malpractice_flags) || 0
+      ),
+    })
+    .eq("id", activeSubmission.id)
+    .is("submitted_at", null);
 
   if (updateError) {
     return NextResponse.json({ ok: false, message: updateError.message }, { status: 500 });
@@ -86,5 +177,10 @@ export async function POST(req: Request) {
     ok: true,
     score,
     total: rows.length,
+    submitted_at: new Date().toISOString(),
+    malpractice_flags: Math.max(
+      malpracticeFlags,
+      Number(activeSubmission.malpractice_flags) || 0
+    ),
   });
 }

@@ -1,12 +1,13 @@
 "use client";
 
 import PageHero from "@/components/PageHero";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type QuizRow = {
   id: string;
   title: string;
   description: string | null;
+  duration_minutes: number | null;
 };
 
 type QuestionRow = {
@@ -28,6 +29,7 @@ export default function AdminLMSQuizPage() {
   const [quizForm, setQuizForm] = useState({
     title: "",
     description: "",
+    duration_minutes: "20",
   });
 
   const [questionForm, setQuestionForm] = useState({
@@ -39,7 +41,7 @@ export default function AdminLMSQuizPage() {
     correct_option: "A",
   });
 
-  async function loadQuizzes() {
+  const loadQuizzes = useCallback(async function loadQuizzes() {
     const res = await fetch("/api/admin/lms/quiz/list", { cache: "no-store" });
     const data = await res.json().catch(() => null);
 
@@ -52,7 +54,7 @@ export default function AdminLMSQuizPage() {
     if (!selectedQuizId && data.rows?.[0]?.id) {
       setSelectedQuizId(data.rows[0].id);
     }
-  }
+  }, [selectedQuizId]);
 
   async function loadQuestions(quizId: string) {
     if (!quizId) return;
@@ -76,11 +78,17 @@ export default function AdminLMSQuizPage() {
   }
 
   useEffect(() => {
-    loadQuizzes();
-  }, []);
+    async function init() {
+      await loadQuizzes();
+    }
+
+    void init();
+  }, [loadQuizzes]);
 
   useEffect(() => {
-    if (selectedQuizId) loadQuestions(selectedQuizId);
+    if (selectedQuizId) {
+      void Promise.resolve().then(() => loadQuestions(selectedQuizId));
+    }
   }, [selectedQuizId]);
 
   async function createQuiz(e: React.FormEvent) {
@@ -102,7 +110,7 @@ export default function AdminLMSQuizPage() {
       return;
     }
 
-    setQuizForm({ title: "", description: "" });
+    setQuizForm({ title: "", description: "", duration_minutes: "20" });
     await loadQuizzes();
   }
 
@@ -205,6 +213,17 @@ export default function AdminLMSQuizPage() {
                   className="min-h-[110px] w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
                 />
 
+                <input
+                  type="number"
+                  min="1"
+                  value={quizForm.duration_minutes}
+                  onChange={(e) =>
+                    setQuizForm((p) => ({ ...p, duration_minutes: e.target.value }))
+                  }
+                  placeholder="Duration in minutes"
+                  className="w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                />
+
                 <button
                   type="submit"
                   className="w-full rounded-lg bg-purple-600 px-5 py-3 font-semibold text-white hover:bg-purple-700"
@@ -231,6 +250,9 @@ export default function AdminLMSQuizPage() {
                         {quiz.description ? (
                           <p className="mt-1 text-sm text-slate-600">{quiz.description}</p>
                         ) : null}
+                        <p className="mt-1 text-sm text-slate-500">
+                          Duration: {quiz.duration_minutes || 20} minutes
+                        </p>
                       </button>
 
                       <button
