@@ -88,7 +88,10 @@ export default function LMSExamPage() {
     load();
   }, []);
 
-  const submitExam = useCallback(async (e?: React.FormEvent) => {
+  const submitExam = useCallback(async (
+    e?: React.FormEvent,
+    options?: { allowExpiredSubmit?: boolean }
+  ) => {
     e?.preventDefault();
     if (!exam) return;
 
@@ -104,6 +107,7 @@ export default function LMSExamPage() {
         exam_id: exam.id,
         answers,
         malpractice_flags: malpracticeFlags,
+        allow_expired_submit: options?.allowExpiredSubmit === true,
       }),
     });
 
@@ -199,7 +203,7 @@ export default function LMSExamPage() {
     if (!exam || alreadySubmitted || !submission?.started_at || timeLeft !== 0 || submitting) return;
 
     const timeout = window.setTimeout(() => {
-      void submitExam();
+      void submitExam(undefined, { allowExpiredSubmit: true });
     }, 0);
 
     return () => window.clearTimeout(timeout);
@@ -241,7 +245,7 @@ export default function LMSExamPage() {
 
         if (next >= 3) {
           window.setTimeout(() => {
-            void submitExam();
+            void submitExam(undefined, { allowExpiredSubmit: true });
           }, 0);
         }
 
