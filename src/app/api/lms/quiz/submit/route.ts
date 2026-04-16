@@ -14,6 +14,7 @@ export async function POST(req: Request) {
   const quizId = body?.quiz_id;
   const answers = body?.answers || {};
   const malpracticeFlags = Math.max(0, Number(body?.malpractice_flags) || 0);
+  const allowExpiredSubmit = body?.allow_expired_submit === true;
 
   if (!quizId) {
     return NextResponse.json({ ok: false, message: "Missing quiz ID." }, { status: 400 });
@@ -115,7 +116,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "Invalid quiz timing data." }, { status: 500 });
   }
 
-  if (Date.now() > deadline) {
+  if (Date.now() > deadline && !allowExpiredSubmit) {
     return NextResponse.json(
       { ok: false, message: "Quiz time has expired." },
       { status: 409 }

@@ -88,7 +88,10 @@ export default function LMSQuizPage() {
     load();
   }, []);
 
-  const submitQuiz = useCallback(async (e?: React.FormEvent) => {
+  const submitQuiz = useCallback(async (
+    e?: React.FormEvent,
+    options?: { allowExpiredSubmit?: boolean }
+  ) => {
     e?.preventDefault();
     if (!quiz) return;
 
@@ -104,6 +107,7 @@ export default function LMSQuizPage() {
         quiz_id: quiz.id,
         answers,
         malpractice_flags: malpracticeFlags,
+        allow_expired_submit: options?.allowExpiredSubmit === true,
       }),
     });
 
@@ -199,7 +203,7 @@ export default function LMSQuizPage() {
     if (!quiz || alreadySubmitted || !submission?.started_at || timeLeft !== 0 || submitting) return;
 
     const timeout = window.setTimeout(() => {
-      void submitQuiz();
+      void submitQuiz(undefined, { allowExpiredSubmit: true });
     }, 0);
 
     return () => window.clearTimeout(timeout);
@@ -239,7 +243,7 @@ export default function LMSQuizPage() {
 
         if (next >= 3) {
           window.setTimeout(() => {
-            void submitQuiz();
+            void submitQuiz(undefined, { allowExpiredSubmit: true });
           }, 0);
         }
 

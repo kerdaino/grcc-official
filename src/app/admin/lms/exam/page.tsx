@@ -1,12 +1,13 @@
 "use client";
 
 import PageHero from "@/components/PageHero";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type ExamRow = {
   id: string;
   title: string;
   description: string | null;
+  duration_minutes: number | null;
 };
 
 type QuestionRow = {
@@ -28,6 +29,7 @@ export default function AdminLMSExamPage() {
   const [examForm, setExamForm] = useState({
     title: "",
     description: "",
+    duration_minutes: "60",
   });
 
   const [questionForm, setQuestionForm] = useState({
@@ -39,7 +41,7 @@ export default function AdminLMSExamPage() {
     correct_option: "A",
   });
 
-  async function loadExams() {
+  const loadExams = useCallback(async function loadExams() {
     const res = await fetch("/api/admin/lms/exam/list", { cache: "no-store" });
     const data = await res.json().catch(() => null);
 
@@ -52,7 +54,7 @@ export default function AdminLMSExamPage() {
     if (!selectedExamId && data.rows?.[0]?.id) {
       setSelectedExamId(data.rows[0].id);
     }
-  }
+  }, [selectedExamId]);
 
   async function loadQuestions(examId: string) {
     if (!examId) return;
@@ -76,11 +78,17 @@ export default function AdminLMSExamPage() {
   }
 
   useEffect(() => {
-    loadExams();
-  }, []);
+    async function init() {
+      await loadExams();
+    }
+
+    void init();
+  }, [loadExams]);
 
   useEffect(() => {
-    if (selectedExamId) loadQuestions(selectedExamId);
+    if (selectedExamId) {
+      void Promise.resolve().then(() => loadQuestions(selectedExamId));
+    }
   }, [selectedExamId]);
 
   async function createExam(e: React.FormEvent) {
@@ -102,7 +110,7 @@ export default function AdminLMSExamPage() {
       return;
     }
 
-    setExamForm({ title: "", description: "" });
+    setExamForm({ title: "", description: "", duration_minutes: "60" });
     await loadExams();
   }
 
@@ -205,6 +213,17 @@ export default function AdminLMSExamPage() {
                   className="min-h-[110px] w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
                 />
 
+                <input
+                  type="number"
+                  min="1"
+                  value={examForm.duration_minutes}
+                  onChange={(e) =>
+                    setExamForm((p) => ({ ...p, duration_minutes: e.target.value }))
+                  }
+                  placeholder="Duration in minutes"
+                  className="w-full rounded-lg border px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                />
+
                 <button
                   type="submit"
                   className="w-full rounded-lg bg-purple-600 px-5 py-3 font-semibold text-white hover:bg-purple-700"
@@ -231,6 +250,9 @@ export default function AdminLMSExamPage() {
                         {exam.description ? (
                           <p className="mt-1 text-sm text-slate-600">{exam.description}</p>
                         ) : null}
+                        <p className="mt-1 text-sm text-slate-500">
+                          Duration: {exam.duration_minutes || 60} minutes
+                        </p>
                       </button>
 
                       <button
