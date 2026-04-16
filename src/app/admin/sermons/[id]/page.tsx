@@ -22,9 +22,10 @@ export default function EditSermonPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const [id, setId] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingAudio, setUploadingAudio] = useState(false);
   const [msg, setMsg] = useState("");
 
   const [form, setForm] = useState<Sermon>({
@@ -44,7 +45,6 @@ export default function EditSermonPage({
   useEffect(() => {
     async function init() {
       const resolved = await params;
-      setId(resolved.id);
 
       const res = await fetch("/api/admin/sermons/list", { cache: "no-store" });
       const data = await res.json().catch(() => null);
@@ -85,6 +85,56 @@ export default function EditSermonPage({
 
   function set<K extends keyof Sermon>(key: K, value: Sermon[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleImageChange(file: File | null) {
+    if (!file) return;
+
+    setUploadingImage(true);
+    setMsg("");
+
+    const body = new FormData();
+    body.append("file", file);
+
+    const res = await fetch("/api/admin/sermons/upload-image", {
+      method: "POST",
+      body,
+    });
+
+    const data = await res.json().catch(() => null);
+    setUploadingImage(false);
+
+    if (!res.ok || !data?.ok) {
+      setMsg(data?.message || "Thumbnail upload failed.");
+      return;
+    }
+
+    set("thumbnail_url", data.url);
+  }
+
+  async function handleAudioChange(file: File | null) {
+    if (!file) return;
+
+    setUploadingAudio(true);
+    setMsg("");
+
+    const body = new FormData();
+    body.append("file", file);
+
+    const res = await fetch("/api/admin/sermons/upload-audio", {
+      method: "POST",
+      body,
+    });
+
+    const data = await res.json().catch(() => null);
+    setUploadingAudio(false);
+
+    if (!res.ok || !data?.ok) {
+      setMsg(data?.message || "Audio upload failed.");
+      return;
+    }
+
+    set("audio_url", data.url);
   }
 
   async function submit(e: React.FormEvent) {
@@ -145,12 +195,74 @@ export default function EditSermonPage({
               <Input label="Scripture" value={form.scripture || ""} onChange={(v) => set("scripture", v)} />
               <Textarea label="Summary" value={form.summary || ""} onChange={(v) => set("summary", v)} />
               <Input label="YouTube URL" value={form.youtube_url || ""} onChange={(v) => set("youtube_url", v)} />
-              <Input label="Audio URL" value={form.audio_url || ""} onChange={(v) => set("audio_url", v)} />
-              <Input
-                label="Thumbnail URL"
-                value={form.thumbnail_url || ""}
-                onChange={(v) => set("thumbnail_url", v)}
-              />
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-900">
+                  Thumbnail Image
+                </label>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 text-slate-900"
+                />
+
+                {uploadingImage ? (
+                  <p className="mt-2 text-sm text-slate-600">Uploading thumbnail...</p>
+                ) : null}
+
+                {form.thumbnail_url ? (
+                  <div className="mt-4 overflow-hidden rounded-xl border">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={form.thumbnail_url}
+                      alt="Thumbnail preview"
+                      className="h-52 w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <p className="mt-2 text-sm text-slate-500">No thumbnail uploaded yet.</p>
+                )}
+
+                <Input
+                  label="Thumbnail URL (optional)"
+                  value={form.thumbnail_url || ""}
+                  onChange={(v) => set("thumbnail_url", v)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-900">
+                  Audio File
+                </label>
+
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={(e) => handleAudioChange(e.target.files?.[0] || null)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 text-slate-900"
+                />
+
+                {uploadingAudio ? (
+                  <p className="mt-2 text-sm text-slate-600">Uploading audio...</p>
+                ) : null}
+
+                {form.audio_url ? (
+                  <audio controls className="mt-4 w-full">
+                    <source src={form.audio_url || ""} />
+                    Your browser does not support audio playback.
+                  </audio>
+                ) : (
+                  <p className="mt-2 text-sm text-slate-500">No audio uploaded yet.</p>
+                )}
+
+                <Input
+                  label="Audio URL or Telegram Post Link (optional)"
+                  value={form.audio_url || ""}
+                  onChange={(v) => set("audio_url", v)}
+                />
+              </div>
 
               <label className="flex items-center gap-3 text-slate-900 font-medium">
                 <input
@@ -162,7 +274,7 @@ export default function EditSermonPage({
               </label>
 
               <button
-                disabled={saving}
+                disabled={saving || uploadingImage || uploadingAudio}
                 className="rounded-lg bg-fuchsia-600 px-6 py-3 font-semibold text-white hover:bg-fuchsia-700 disabled:opacity-60"
               >
                 {saving ? "Saving..." : "Save Changes"}

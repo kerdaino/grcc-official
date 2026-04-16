@@ -15,6 +15,31 @@ function getYouTubeId(url: string) {
   return "";
 }
 
+function getTelegramEmbedUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, "");
+
+    if (host !== "t.me" && host !== "telegram.me") {
+      return "";
+    }
+
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    if (parts[0] === "s") {
+      parts.shift();
+    }
+
+    if (parts.length < 2) {
+      return "";
+    }
+
+    const [channel, messageId] = parts;
+    return `https://t.me/${channel}/${messageId}?embed=1`;
+  } catch {
+    return "";
+  }
+}
+
 export default async function SermonSinglePage({
   params,
 }: {
@@ -50,6 +75,7 @@ export default async function SermonSinglePage({
   }
 
   const youtubeId = s.youtube_url ? getYouTubeId(s.youtube_url) : "";
+  const telegramEmbedUrl = s.audio_url ? getTelegramEmbedUrl(s.audio_url) : "";
 
   return (
     <main>
@@ -85,6 +111,14 @@ export default async function SermonSinglePage({
                 />
               </div>
             </div>
+          ) : telegramEmbedUrl ? (
+            <div className="mt-6 overflow-hidden rounded-2xl border bg-white">
+              <iframe
+                className="min-h-[260px] w-full"
+                src={telegramEmbedUrl}
+                title={`${s.title} on Telegram`}
+              />
+            </div>
           ) : s.audio_url ? (
             <div className="mt-6 rounded-2xl border bg-slate-50 p-6">
               <h2 className="text-lg font-bold text-slate-900">Audio Sermon</h2>
@@ -92,6 +126,14 @@ export default async function SermonSinglePage({
                 <source src={s.audio_url} />
                 Your browser does not support audio playback.
               </audio>
+              <a
+                href={s.audio_url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-flex font-semibold text-fuchsia-700 hover:underline"
+              >
+                Open audio link
+              </a>
             </div>
           ) : (
             <div className="mt-6 rounded-2xl border bg-slate-50 p-10 text-center text-slate-600">
