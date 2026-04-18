@@ -1,6 +1,9 @@
 import PageHero from "@/components/PageHero";
 import Link from "next/link";
 import { supabaseServer } from "@/lib/supabaseServer";
+import EventImageViewer from "./EventImageViewer";
+
+export const dynamic = "force-dynamic";
 
 type Event = {
   id: string;
@@ -38,18 +41,17 @@ export default async function EventsPage() {
           ) : (
             <div className="grid gap-6 md:grid-cols-3">
               {rows.map((e) => (
-                <Link
+                <div
                   key={e.id}
-                  href={`/events/${e.slug}`}
                   className="overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-md"
                 >
-                  <div className="h-52 w-full overflow-hidden bg-slate-100">
+                  <div className="relative h-52 w-full overflow-hidden bg-slate-100">
                     {e.image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <EventImageViewer
                         src={e.image_url}
                         alt={e.title}
-                        className="h-full w-full object-cover"
+                        containerClassName="h-full rounded-none"
+                        imageClassName="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="grid h-full w-full place-items-center text-sm text-slate-500">
@@ -64,19 +66,24 @@ export default async function EventsPage() {
                       {e.event_time ? ` • ${e.event_time}` : ""}
                     </p>
 
-                    <h3 className="mt-2 font-extrabold text-slate-900">
-                      {e.title}
-                    </h3>
+                    <Link href={`/events/${e.slug}`} className="block">
+                      <h3 className="mt-2 font-extrabold text-slate-900">
+                        {e.title}
+                      </h3>
+                    </Link>
 
                     <p className="mt-3 text-sm text-slate-600">
                       {e.location || "Location not specified"}
                     </p>
 
-                    <p className="mt-5 font-semibold text-purple-700">
+                    <Link
+                      href={`/events/${e.slug}`}
+                      className="mt-5 inline-block font-semibold text-purple-700"
+                    >
                       View Details →
-                    </p>
+                    </Link>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}

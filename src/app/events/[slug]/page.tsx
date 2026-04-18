@@ -1,6 +1,9 @@
 import PageHero from "@/components/PageHero";
 import Link from "next/link";
 import { supabaseServer } from "@/lib/supabaseServer";
+import EventImageViewer from "../EventImageViewer";
+
+export const dynamic = "force-dynamic";
 
 export default async function EventSinglePage({
   params,
@@ -49,12 +52,12 @@ export default async function EventSinglePage({
         <div className="mx-auto max-w-4xl px-4 py-16">
           <div className="overflow-hidden rounded-2xl border bg-slate-50">
             {event.image_url ? (
-              <div className="h-[320px] w-full overflow-hidden bg-slate-100">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+              <div className="relative h-[320px] w-full overflow-hidden bg-slate-100 sm:h-[420px]">
+                <EventImageViewer
                   src={event.image_url}
                   alt={event.title}
-                  className="h-full w-full object-cover"
+                  containerClassName="h-full"
+                  imageClassName="w-full h-full object-contain bg-slate-100"
                 />
               </div>
             ) : null}
