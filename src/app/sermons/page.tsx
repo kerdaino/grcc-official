@@ -1,28 +1,24 @@
 import PageHero from "@/components/PageHero";
+import Image from "next/image";
 import Link from "next/link";
 import { supabaseServer } from "@/lib/supabaseServer";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 type Sermon = {
   id: string;
-  created_at: string;
   title: string;
   slug: string;
   preacher: string | null;
   sermon_date: string | null;
-  scripture: string | null;
   summary: string | null;
-  youtube_url: string | null;
   thumbnail_url: string | null;
 };
 
 export default async function SermonsPage() {
   const { data, error } = await supabaseServer
     .from("sermons")
-    .select(
-      "id, created_at, title, slug, preacher, sermon_date, scripture, summary, youtube_url, thumbnail_url"
-    )
+    .select("id, title, slug, preacher, sermon_date, summary, thumbnail_url")
     .eq("is_published", true)
     .order("sermon_date", { ascending: false });
 
@@ -44,18 +40,21 @@ export default async function SermonsPage() {
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-3">
-              {rows.map((s) => (
+              {rows.map((s, index) => (
                 <Link
                   key={s.id}
                   href={`/sermons/${s.slug}`}
                   className="group overflow-hidden rounded-2xl border bg-white transition hover:shadow-lg"
                 >
-                  <div className="h-52 overflow-hidden bg-slate-100">
+                  <div className="relative h-52 overflow-hidden bg-slate-100">
                     {s.thumbnail_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={s.thumbnail_url}
                         alt={s.title}
+                        fill
+                        sizes="(min-width: 768px) 33vw, 100vw"
+                        quality={75}
+                        priority={index < 3}
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
                     ) : (

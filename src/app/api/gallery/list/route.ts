@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 
+export const revalidate = 300;
+
 export async function GET() {
   const { data, error } = await supabaseServer
     .from("gallery")
@@ -15,5 +17,12 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({ ok: true, rows: data || [] });
+  return NextResponse.json(
+    { ok: true, rows: data || [] },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    }
+  );
 }

@@ -1,7 +1,30 @@
 import type { NextConfig } from "next";
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseRemotePattern = (() => {
+  if (!supabaseUrl) return [];
+
+  try {
+    const { protocol, hostname, port } = new URL(supabaseUrl);
+
+    return [
+      {
+        protocol: protocol.replace(":", "") as "http" | "https",
+        hostname,
+        port,
+        pathname: "/storage/v1/object/public/**",
+      },
+    ];
+  } catch {
+    return [];
+  }
+})();
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: supabaseRemotePattern,
+    formats: ["image/avif", "image/webp"],
+  },
 };
 
 export default nextConfig;
