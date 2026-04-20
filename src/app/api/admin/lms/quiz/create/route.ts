@@ -25,7 +25,7 @@ export async function POST(req: Request) {
         Number.isFinite(durationMinutes) && durationMinutes > 0
           ? Math.floor(durationMinutes)
           : 20,
-      is_published: body.is_published ?? true,
+      is_published: false,
     },
   ]);
 

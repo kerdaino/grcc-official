@@ -8,6 +8,7 @@ type ExamRow = {
   title: string;
   description: string | null;
   duration_minutes: number | null;
+  is_published: boolean | null;
 };
 
 type QuestionRow = {
@@ -177,6 +178,43 @@ export default function AdminLMSExamPage() {
     await loadExams();
   }
 
+  async function togglePublishExam(id: string, isPublished: boolean) {
+    const confirmed = confirm(
+      isPublished
+        ? "Unpublish this final exam? Students will no longer see it."
+        : "Publish this final exam? Students will be able to see it."
+    );
+
+    if (!confirmed) return;
+
+    setMsg("");
+
+    const res = await fetch("/api/admin/lms/exam/publish", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+        is_published: !isPublished,
+      }),
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data?.ok) {
+      setMsg(data?.message || "Failed to update final exam status");
+      return;
+    }
+
+    setMsg(
+      !isPublished
+        ? "Final exam published successfully. Students can now see it."
+        : "Final exam unpublished successfully. It is now hidden from students."
+    );
+    await loadExams();
+  }
+
   return (
     <main>
       <PageHero
@@ -232,6 +270,11 @@ export default function AdminLMSExamPage() {
                 </button>
               </form>
 
+              <p className="mt-4 text-sm text-slate-500">
+                New final exams are created as unpublished until you explicitly
+                publish them.
+              </p>
+
               <div className="mt-8">
                 <h3 className="font-bold text-slate-900">Available Exams</h3>
                 <div className="mt-4 space-y-3">
@@ -246,7 +289,18 @@ export default function AdminLMSExamPage() {
                         onClick={() => setSelectedExamId(exam.id)}
                         className="w-full text-left"
                       >
-                        <p className="font-semibold text-slate-900">{exam.title}</p>
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="font-semibold text-slate-900">{exam.title}</p>
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                              exam.is_published
+                                ? "bg-emerald-50 text-emerald-700"
+                                : "bg-amber-50 text-amber-700"
+                            }`}
+                          >
+                            {exam.is_published ? "Published" : "Draft"}
+                          </span>
+                        </div>
                         {exam.description ? (
                           <p className="mt-1 text-sm text-slate-600">{exam.description}</p>
                         ) : null}
@@ -255,12 +309,25 @@ export default function AdminLMSExamPage() {
                         </p>
                       </button>
 
-                      <button
-                        onClick={() => deleteExam(exam.id)}
-                        className="mt-3 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          onClick={() => togglePublishExam(exam.id, !!exam.is_published)}
+                          className={`rounded-lg px-3 py-2 text-sm font-semibold text-white ${
+                            exam.is_published
+                              ? "bg-amber-600 hover:bg-amber-700"
+                              : "bg-emerald-600 hover:bg-emerald-700"
+                          }`}
+                        >
+                          {exam.is_published ? "Unpublish" : "Publish"}
+                        </button>
+
+                        <button
+                          onClick={() => deleteExam(exam.id)}
+                          className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   ))}
 

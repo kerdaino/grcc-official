@@ -11,23 +11,22 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const durationMinutes = Number(body?.duration_minutes);
 
-  if (!body?.title?.trim()) {
-    return NextResponse.json({ ok: false, message: "Exam title is required." }, { status: 400 });
+  if (!body?.id) {
+    return NextResponse.json({ ok: false, message: "Missing quiz ID." }, { status: 400 });
   }
 
-  const { error } = await supabaseServer.from("sod_exams").insert([
-    {
-      title: body.title.trim(),
-      description: body.description?.trim() || "",
-      duration_minutes:
-        Number.isFinite(durationMinutes) && durationMinutes > 0
-          ? Math.floor(durationMinutes)
-          : 60,
-      is_published: false,
-    },
-  ]);
+  if (typeof body?.is_published !== "boolean") {
+    return NextResponse.json(
+      { ok: false, message: "Quiz publish status is required." },
+      { status: 400 }
+    );
+  }
+
+  const { error } = await supabaseServer
+    .from("sod_quizzes")
+    .update({ is_published: body.is_published })
+    .eq("id", body.id);
 
   if (error) {
     return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
