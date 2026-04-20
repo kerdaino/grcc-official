@@ -6,6 +6,32 @@ import type { GalleryPhoto } from "./page";
 
 const INITIAL_PHOTO_COUNT = 9;
 const LOAD_MORE_COUNT = 12;
+const GALLERY_CARD_WIDTH = 800;
+const GALLERY_CARD_HEIGHT = 600;
+const GALLERY_CARD_QUALITY = 60;
+
+function getGalleryThumbnailSrc(src: string) {
+  try {
+    const url = new URL(src);
+
+    if (!url.pathname.includes("/storage/v1/object/public/")) {
+      return src;
+    }
+
+    url.pathname = url.pathname.replace(
+      "/storage/v1/object/public/",
+      "/storage/v1/render/image/public/"
+    );
+    url.searchParams.set("width", String(GALLERY_CARD_WIDTH));
+    url.searchParams.set("height", String(GALLERY_CARD_HEIGHT));
+    url.searchParams.set("quality", String(GALLERY_CARD_QUALITY));
+    url.searchParams.set("resize", "cover");
+
+    return url.toString();
+  } catch {
+    return src;
+  }
+}
 
 function GalleryCardImage({
   src,
@@ -17,6 +43,7 @@ function GalleryCardImage({
   priority: boolean;
 }) {
   const [loaded, setLoaded] = useState(false);
+  const thumbnailSrc = getGalleryThumbnailSrc(src);
 
   return (
     <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-200">
@@ -25,7 +52,7 @@ function GalleryCardImage({
       ) : null}
 
       <Image
-        src={src}
+        src={thumbnailSrc}
         alt={alt}
         fill
         sizes="(min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"

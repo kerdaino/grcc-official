@@ -14,6 +14,12 @@ const supabaseRemotePattern = (() => {
         port,
         pathname: "/storage/v1/object/public/**",
       },
+      {
+        protocol: protocol.replace(":", "") as "http" | "https",
+        hostname,
+        port,
+        pathname: "/storage/v1/render/image/public/**",
+      },
     ];
   } catch {
     return [];
