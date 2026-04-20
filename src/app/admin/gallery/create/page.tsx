@@ -2,6 +2,11 @@
 
 import PageHero from "@/components/PageHero";
 import { useState } from "react";
+import {
+  GALLERY_IMAGE_ACCEPT,
+  getGalleryImageSizeError,
+  getGalleryImageTypeError,
+} from "@/lib/galleryUpload";
 
 export default function CreateGalleryPage() {
   const [loading, setLoading] = useState(false);
@@ -21,26 +26,50 @@ export default function CreateGalleryPage() {
   async function handleFileChange(file: File | null) {
     if (!file) return;
 
-    setUploading(true);
     setMsg("");
+    const typeError = getGalleryImageTypeError(file);
+
+    if (typeError) {
+      setMsg(typeError);
+      return;
+    }
+
+    const sizeError = getGalleryImageSizeError(file);
+
+    if (sizeError) {
+      setMsg(sizeError);
+      return;
+    }
+
+    setUploading(true);
 
     const body = new FormData();
     body.append("file", file);
 
-    const res = await fetch("/api/admin/gallery/upload-image", {
-      method: "POST",
-      body,
-    });
+    try {
+      const res = await fetch("/api/admin/gallery/upload-image", {
+        method: "POST",
+        body,
+      });
 
-    const data = await res.json().catch(() => null);
-    setUploading(false);
+      const data = await res.json().catch(() => null);
 
-    if (!res.ok || !data?.ok) {
-      setMsg(data?.message || "Image upload failed.");
-      return;
+      if (!res.ok || !data?.ok) {
+        setMsg(
+          data?.message ||
+            "Image upload failed. Please check the file type and size, then try again."
+        );
+        return;
+      }
+
+      set("image_url", data.url);
+    } catch {
+      setMsg(
+        "Upload failed before the server returned a response. This usually means the file is too large or the network request was interrupted."
+      );
+    } finally {
+      setUploading(false);
     }
-
-    set("image_url", data.url);
   }
 
   async function submit(e: React.FormEvent) {
@@ -105,10 +134,15 @@ export default function CreateGalleryPage() {
 
               <input
                 type="file"
-                accept="image/*"
+                accept={GALLERY_IMAGE_ACCEPT}
                 onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
                 className="mt-2 w-full rounded-lg border px-4 py-3 text-slate-900"
               />
+
+              <p className="mt-2 text-sm text-slate-500">
+                Accepted: JPG, PNG, WebP, GIF, or AVIF up to 25 MB. Compressed
+                images are recommended for faster uploads.
+              </p>
 
               {uploading ? (
                 <p className="mt-2 text-sm text-slate-600">Uploading image...</p>
