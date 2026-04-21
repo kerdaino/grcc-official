@@ -10,16 +10,52 @@ export async function GET() {
     return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: quiz, error: quizError } = await supabaseServer
-    .from("sod_quizzes")
-    .select("*")
-    .eq("is_published", true)
-    .order("created_at", { ascending: false })
+  const nowIso = new Date().toISOString();
+  const { data: activeSubmission, error: activeSubmissionError } = await supabaseServer
+    .from("sod_quiz_submissions")
+    .select("id, quiz_id, score, total, started_at, submitted_at, malpractice_flags")
+    .eq("student_id", studentId)
+    .is("submitted_at", null)
+    .order("started_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  if (quizError) {
-    return NextResponse.json({ ok: false, message: quizError.message }, { status: 500 });
+  if (activeSubmissionError) {
+    return NextResponse.json({ ok: false, message: activeSubmissionError.message }, { status: 500 });
+  }
+
+  let quiz = null;
+
+  if (activeSubmission?.quiz_id) {
+    const { data: activeQuiz, error: activeQuizError } = await supabaseServer
+      .from("sod_quizzes")
+      .select("*")
+      .eq("id", activeSubmission.quiz_id)
+      .eq("is_published", true)
+      .maybeSingle();
+
+    if (activeQuizError) {
+      return NextResponse.json({ ok: false, message: activeQuizError.message }, { status: 500 });
+    }
+
+    quiz = activeQuiz;
+  }
+
+  if (!quiz) {
+    const { data: availableQuiz, error: quizError } = await supabaseServer
+      .from("sod_quizzes")
+      .select("*")
+      .eq("is_published", true)
+      .gt("available_until", nowIso)
+      .order("published_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (quizError) {
+      return NextResponse.json({ ok: false, message: quizError.message }, { status: 500 });
+    }
+
+    quiz = availableQuiz;
   }
 
   if (!quiz) {
@@ -43,42 +79,21 @@ export async function GET() {
 
   const rows = questions || [];
 
-  const { data: existingSubmission, error: submissionError } = await supabaseServer
-    .from("sod_quiz_submissions")
-    .select("id, score, total, started_at, submitted_at, malpractice_flags")
-    .eq("quiz_id", quiz.id)
-    .eq("student_id", studentId)
-    .maybeSingle();
-
-  if (submissionError) {
-    return NextResponse.json({ ok: false, message: submissionError.message }, { status: 500 });
-  }
-
-  let submission = existingSubmission;
+  let submission = activeSubmission;
 
   if (!submission) {
-    const startedAt = new Date().toISOString();
-
-    const { data: createdSubmission, error: createError } = await supabaseServer
+    const { data: existingSubmission, error: submissionError } = await supabaseServer
       .from("sod_quiz_submissions")
-      .insert([
-        {
-          quiz_id: quiz.id,
-          student_id: studentId,
-          score: 0,
-          total: rows.length,
-          started_at: startedAt,
-          malpractice_flags: 0,
-        },
-      ])
-      .select("id, score, total, started_at, submitted_at, malpractice_flags")
-      .single();
+      .select("id, quiz_id, score, total, started_at, submitted_at, malpractice_flags")
+      .eq("quiz_id", quiz.id)
+      .eq("student_id", studentId)
+      .maybeSingle();
 
-    if (createError) {
-      return NextResponse.json({ ok: false, message: createError.message }, { status: 500 });
+    if (submissionError) {
+      return NextResponse.json({ ok: false, message: submissionError.message }, { status: 500 });
     }
 
-    submission = createdSubmission;
+    submission = existingSubmission;
   }
 
   return NextResponse.json({

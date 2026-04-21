@@ -12,7 +12,9 @@ export async function GET() {
 
   const { data, error } = await supabaseServer
     .from("sod_quizzes")
-    .select("*")
+    .select(
+      "id, title, description, duration_minutes, is_published, published_at, available_until, created_at"
+    )
     .order("created_at", { ascending: false });
 
   if (error) {

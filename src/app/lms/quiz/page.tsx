@@ -9,6 +9,7 @@ type Quiz = {
   title: string;
   description: string | null;
   duration_minutes: number | null;
+  available_until?: string | null;
 };
 
 type SubmissionState = {
@@ -36,57 +37,97 @@ export default function LMSQuizPage() {
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<{ score: number; total: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [starting, setStarting] = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [submission, setSubmission] = useState<SubmissionState | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [malpracticeFlags, setMalpracticeFlags] = useState(0);
   const [malpracticeWarning, setMalpracticeWarning] = useState("");
+  const [availabilityTimeLeft, setAvailabilityTimeLeft] = useState<number | null>(null);
+  const hasStarted = !!submission?.started_at && !submission?.submitted_at;
 
-  useEffect(() => {
-    async function load() {
-      const res = await fetch("/api/lms/quiz/current", {
-        cache: "no-store",
-      });
-      const data = await res.json().catch(() => null);
+  const loadQuiz = useCallback(async () => {
+    const res = await fetch("/api/lms/quiz/current", {
+      cache: "no-store",
+    });
+    const data = await res.json().catch(() => null);
 
-      if (!res.ok || !data?.ok) {
-        setMsg(data?.message || "Failed to load quiz");
-        setLoading(false);
-        return;
-      }
-
-      setQuiz(data.quiz || null);
-      setQuestions(data.questions || []);
-      setSubmission(data.submission || null);
-      setAlreadySubmitted(!!data.already_submitted);
-      setMalpracticeFlags(Math.max(0, Number(data.submission?.malpractice_flags) || 0));
-
-      if (data.submission?.submitted_at) {
-        setResult({
-          score: data.submission.score || 0,
-          total: data.submission.total || (data.questions || []).length,
-        });
-      } else {
-        setResult(null);
-      }
-
-      if (!data.submission?.submitted_at && data.submission?.started_at && data.quiz) {
-        const durationMinutes =
-          typeof data.quiz.duration_minutes === "number" && data.quiz.duration_minutes > 0
-            ? data.quiz.duration_minutes
-            : 20;
-        const startedAt = new Date(data.submission.started_at).getTime();
-        const deadline = startedAt + durationMinutes * 60 * 1000;
-        setTimeLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
-      } else {
-        setTimeLeft(null);
-      }
-
+    if (!res.ok || !data?.ok) {
+      setMsg(data?.message || "Failed to load quiz");
       setLoading(false);
+      return;
     }
 
-    load();
+    setQuiz(data.quiz || null);
+    setQuestions(data.questions || []);
+    setSubmission(data.submission || null);
+    setAlreadySubmitted(!!data.already_submitted);
+    setMalpracticeFlags(Math.max(0, Number(data.submission?.malpractice_flags) || 0));
+    setMalpracticeWarning("");
+
+    if (data.submission?.submitted_at) {
+      setResult({
+        score: data.submission.score || 0,
+        total: data.submission.total || (data.questions || []).length,
+      });
+    } else {
+      setResult(null);
+    }
+
+    if (!data.submission?.submitted_at && data.submission?.started_at && data.quiz) {
+      const durationMinutes =
+        typeof data.quiz.duration_minutes === "number" && data.quiz.duration_minutes > 0
+          ? data.quiz.duration_minutes
+          : 20;
+      const startedAt = new Date(data.submission.started_at).getTime();
+      const deadline = startedAt + durationMinutes * 60 * 1000;
+      setTimeLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+    } else {
+      setTimeLeft(null);
+    }
+
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    void loadQuiz();
+  }, [loadQuiz]);
+
+  const startQuiz = useCallback(async () => {
+    if (!quiz) return;
+
+    setStarting(true);
+    setMsg("");
+
+    const res = await fetch("/api/lms/quiz/start", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        quiz_id: quiz.id,
+      }),
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data?.ok) {
+      if (data?.already_submitted) {
+        setAlreadySubmitted(true);
+        setResult({
+          score: data.score || 0,
+          total: data.total || questions.length,
+        });
+      } else {
+        setMsg(data?.message || "Failed to start quiz");
+      }
+      setStarting(false);
+      return;
+    }
+
+    await loadQuiz();
+    setStarting(false);
+  }, [loadQuiz, questions.length, quiz]);
 
   const submitQuiz = useCallback(async (
     e?: React.FormEvent,
@@ -258,8 +299,52 @@ export default function LMSQuizPage() {
     };
   }, [quiz, alreadySubmitted, submission?.started_at, persistMalpracticeFlags, submitQuiz]);
 
+  useEffect(() => {
+    if (!quiz?.available_until || hasStarted) {
+      setAvailabilityTimeLeft(null);
+      return;
+    }
+
+    const availableUntil = new Date(quiz.available_until).getTime();
+
+    if (Number.isNaN(availableUntil)) {
+      setAvailabilityTimeLeft(null);
+      return;
+    }
+
+    const updateAvailabilityTimeLeft = () => {
+      setAvailabilityTimeLeft(Math.max(0, Math.ceil((availableUntil - Date.now()) / 1000)));
+    };
+
+    updateAvailabilityTimeLeft();
+
+    const timer = window.setInterval(updateAvailabilityTimeLeft, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [quiz?.available_until, hasStarted]);
+
+  function formatDuration(totalSeconds: number | null) {
+    if (totalSeconds === null) return null;
+
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+    }
+
+    return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
+  }
+
   const minutes = timeLeft !== null ? Math.floor(timeLeft / 60) : null;
   const seconds = timeLeft !== null ? timeLeft % 60 : null;
+  const availableUntilText =
+    quiz?.available_until && !Number.isNaN(new Date(quiz.available_until).getTime())
+      ? new Date(quiz.available_until).toLocaleString()
+      : null;
+  const availabilityTimeLeftText = formatDuration(availabilityTimeLeft);
+  const attemptDurationText = `${quiz?.duration_minutes || 20} minutes`;
 
   return (
     <LMSLayout>
@@ -290,6 +375,95 @@ export default function LMSQuizPage() {
               Your score: <strong>{result.score}</strong> / {result.total}
             </p>
             <p className="mt-2 text-slate-600">This quiz is now closed for your account.</p>
+          </div>
+        ) : !hasStarted ? (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-extrabold text-slate-900">{quiz.title}</h2>
+                {quiz.description ? (
+                  <p className="mt-2 max-w-3xl text-slate-600">{quiz.description}</p>
+                ) : null}
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+                <p className="font-semibold text-slate-900">Your attempt</p>
+                <p>{attemptDurationText}</p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">
+                  Availability Window
+                </p>
+                <p className="mt-3 text-2xl font-extrabold text-slate-900">
+                  {availabilityTimeLeftText || "Unavailable"}
+                </p>
+                <p className="mt-2 text-sm text-slate-700">
+                  Time left before this quiz closes for new starts.
+                </p>
+                {availableUntilText ? (
+                  <p className="mt-3 text-sm text-slate-600">
+                    Closes at: <span className="font-semibold text-slate-800">{availableUntilText}</span>
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-5">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                  Personal Attempt
+                </p>
+                <p className="mt-3 text-2xl font-extrabold text-slate-900">
+                  {attemptDurationText}
+                </p>
+                <p className="mt-2 text-sm text-slate-700">
+                  Your timer starts only when you click <strong>Start Quiz</strong>.
+                </p>
+                <div className="mt-4 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                  One attempt only
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5">
+              <h3 className="text-lg font-bold text-slate-900">Quiz Instructions</h3>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="rounded-lg bg-white/70 p-4 text-sm leading-6 text-slate-700">
+                  The quiz is available only within its 24-hour publishing window. You should begin before the
+                  availability countdown ends.
+                </div>
+                <div className="rounded-lg bg-white/70 p-4 text-sm leading-6 text-slate-700">
+                  Once you click <strong>Start Quiz</strong>, your personal <strong>{attemptDurationText}</strong>
+                  {" "}timer begins immediately.
+                </div>
+                <div className="rounded-lg bg-white/70 p-4 text-sm leading-6 text-slate-700">
+                  Only one attempt is allowed. After submission, retake is not available.
+                </div>
+                <div className="rounded-lg bg-white/70 p-4 text-sm leading-6 text-slate-700">
+                  Please do not refresh, close the tab, or switch away while answering.
+                </div>
+                <div className="rounded-lg bg-white/70 p-4 text-sm leading-6 text-slate-700">
+                  Repeated tab switching may trigger warnings and can auto-submit the quiz.
+                </div>
+                <div className="rounded-lg bg-white/70 p-4 text-sm leading-6 text-slate-700">
+                  If your timer reaches zero, the quiz will be submitted automatically.
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center gap-4">
+              <button
+                type="button"
+                onClick={() => void startQuiz()}
+                disabled={starting}
+                className="rounded-xl bg-purple-600 px-5 py-3 font-semibold text-white hover:bg-purple-700 disabled:opacity-60"
+              >
+                {starting ? "Starting..." : "Start Quiz"}
+              </button>
+              <p className="text-sm text-slate-600">
+                Starting is final and immediately begins your timed attempt.
+              </p>
+            </div>
           </div>
         ) : (
           <form onSubmit={submitQuiz} className="space-y-6">

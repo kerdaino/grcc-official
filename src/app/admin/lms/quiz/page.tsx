@@ -9,6 +9,8 @@ type QuizRow = {
   description: string | null;
   duration_minutes: number | null;
   is_published: boolean | null;
+  published_at: string | null;
+  available_until: string | null;
 };
 
 type QuestionRow = {
@@ -41,6 +43,18 @@ export default function AdminLMSQuizPage() {
     option_d: "",
     correct_option: "A",
   });
+
+  function formatDateTime(value: string | null) {
+    if (!value) return "Not set";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "Invalid date";
+    }
+
+    return date.toLocaleString();
+  }
 
   const loadQuizzes = useCallback(async function loadQuizzes() {
     const res = await fetch("/api/admin/lms/quiz/list", { cache: "no-store" });
@@ -182,7 +196,7 @@ export default function AdminLMSQuizPage() {
     const confirmed = confirm(
       isPublished
         ? "Unpublish this quiz? Students will no longer see it."
-        : "Publish this quiz? Students will be able to see it."
+        : "Publish this quiz? Students will be able to access it immediately for 24 hours."
     );
 
     if (!confirmed) return;
@@ -209,7 +223,7 @@ export default function AdminLMSQuizPage() {
 
     setMsg(
       !isPublished
-        ? "Quiz published successfully. Students can now see it."
+        ? "Quiz published successfully. Students can access it for the next 24 hours."
         : "Quiz unpublished successfully. It is now hidden from students."
     );
     await loadQuizzes();
@@ -272,7 +286,7 @@ export default function AdminLMSQuizPage() {
 
               <p className="mt-4 text-sm text-slate-500">
                 New quizzes are created as unpublished until you explicitly publish
-                them.
+                them. Publishing makes a quiz visible immediately for 24 hours.
               </p>
 
               <div className="mt-8">
@@ -285,29 +299,49 @@ export default function AdminLMSQuizPage() {
                         selectedQuizId === quiz.id ? "bg-slate-50" : "bg-white"
                       }`}
                     >
-                      <button
-                        onClick={() => setSelectedQuizId(quiz.id)}
-                        className="w-full text-left"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="font-semibold text-slate-900">{quiz.title}</p>
-                          <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                              quiz.is_published
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-amber-50 text-amber-700"
-                            }`}
+                      {(() => {
+                        const availableUntilMs = quiz.available_until
+                          ? new Date(quiz.available_until).getTime()
+                          : Number.NaN;
+                        const isExpired =
+                          !!quiz.is_published &&
+                          !Number.isNaN(availableUntilMs) &&
+                          availableUntilMs <= Date.now();
+
+                        return (
+                          <button
+                            onClick={() => setSelectedQuizId(quiz.id)}
+                            className="w-full text-left"
                           >
-                            {quiz.is_published ? "Published" : "Draft"}
-                          </span>
-                        </div>
-                        {quiz.description ? (
-                          <p className="mt-1 text-sm text-slate-600">{quiz.description}</p>
-                        ) : null}
-                        <p className="mt-1 text-sm text-slate-500">
-                          Duration: {quiz.duration_minutes || 20} minutes
-                        </p>
-                      </button>
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="font-semibold text-slate-900">{quiz.title}</p>
+                              <span
+                                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                  quiz.is_published
+                                    ? isExpired
+                                      ? "bg-slate-100 text-slate-700"
+                                      : "bg-emerald-50 text-emerald-700"
+                                    : "bg-amber-50 text-amber-700"
+                                }`}
+                              >
+                                {quiz.is_published ? (isExpired ? "Expired" : "Published") : "Draft"}
+                              </span>
+                            </div>
+                            {quiz.description ? (
+                              <p className="mt-1 text-sm text-slate-600">{quiz.description}</p>
+                            ) : null}
+                            <p className="mt-1 text-sm text-slate-500">
+                              Duration: {quiz.duration_minutes || 20} minutes
+                            </p>
+                            <p className="mt-1 text-sm text-slate-500">
+                              Published: {formatDateTime(quiz.published_at)}
+                            </p>
+                            <p className="mt-1 text-sm text-slate-500">
+                              Available until: {formatDateTime(quiz.available_until)}
+                            </p>
+                          </button>
+                        );
+                      })()}
 
                       <div className="mt-3 flex flex-wrap gap-2">
                         <button

@@ -26,6 +26,8 @@ export async function POST(req: Request) {
           ? Math.floor(durationMinutes)
           : 20,
       is_published: false,
+      published_at: null,
+      available_until: null,
     },
   ]);
 

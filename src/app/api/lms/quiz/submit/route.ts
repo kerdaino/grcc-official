@@ -22,16 +22,15 @@ export async function POST(req: Request) {
 
   const { data: quiz, error: quizError } = await supabaseServer
     .from("sod_quizzes")
-    .select("id, is_published, duration_minutes")
+    .select("id, is_published, duration_minutes, available_until")
     .eq("id", quizId)
-    .eq("is_published", true)
     .maybeSingle();
 
   if (quizError) {
     return NextResponse.json({ ok: false, message: quizError.message }, { status: 500 });
   }
 
-  if (!quiz) {
+  if (!quiz || !quiz.is_published) {
     return NextResponse.json({ ok: false, message: "Quiz not found." }, { status: 404 });
   }
 
@@ -39,6 +38,11 @@ export async function POST(req: Request) {
     typeof quiz.duration_minutes === "number" && quiz.duration_minutes > 0
       ? quiz.duration_minutes
       : 20;
+  const availableUntilMs = quiz.available_until
+    ? new Date(quiz.available_until).getTime()
+    : Number.NaN;
+  const isAvailabilityWindowOpen =
+    !Number.isNaN(availableUntilMs) && Date.now() <= availableUntilMs;
 
   const { data: questions, error } = await supabaseServer
     .from("sod_quiz_questions")
@@ -82,30 +86,15 @@ export async function POST(req: Request) {
   let activeSubmission = submission;
 
   if (!activeSubmission) {
-    const startedAt = new Date().toISOString();
-    const { data: createdSubmission, error: createError } = await supabaseServer
-      .from("sod_quiz_submissions")
-      .insert([
-        {
-          quiz_id: quizId,
-          student_id: studentId,
-          score: 0,
-          total: rows.length,
-          started_at: startedAt,
-          malpractice_flags: malpracticeFlags,
-        },
-      ])
-      .select("id, score, total, started_at, submitted_at, malpractice_flags")
-      .single();
-
-    if (createError || !createdSubmission) {
-      return NextResponse.json(
-        { ok: false, message: createError?.message || "Failed to create submission." },
-        { status: 500 }
-      );
-    }
-
-    activeSubmission = createdSubmission;
+    return NextResponse.json(
+      {
+        ok: false,
+        message: isAvailabilityWindowOpen
+          ? "Quiz has not been started."
+          : "This quiz is no longer available.",
+      },
+      { status: 409 }
+    );
   }
 
   const startedAt = activeSubmission.started_at || new Date().toISOString();
