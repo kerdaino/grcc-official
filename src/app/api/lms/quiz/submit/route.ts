@@ -2,6 +2,110 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseServer } from "@/lib/supabaseServer";
 
+type QuizQuestion = {
+  id: string;
+  question: string;
+  option_a: string;
+  option_b: string;
+  option_c: string | null;
+  option_d: string | null;
+  correct_option: string | null;
+};
+
+type QuizAnswerRow = {
+  question_id: string;
+  selected_option: string;
+  is_correct: boolean;
+};
+
+type SubmittedQuizAnswer = {
+  selected_option: string | null;
+  is_correct: boolean | null;
+  sod_quiz_questions: QuizQuestion | QuizQuestion[] | null;
+};
+
+function getOptionText(question: QuizQuestion, option: string | null) {
+  const normalized = String(option || "").toUpperCase();
+
+  if (normalized === "A") return question.option_a;
+  if (normalized === "B") return question.option_b;
+  if (normalized === "C") return question.option_c;
+  if (normalized === "D") return question.option_d;
+
+  return null;
+}
+
+function getJoinedQuestion(answer: SubmittedQuizAnswer) {
+  const question = answer.sod_quiz_questions;
+
+  return Array.isArray(question) ? question[0] : question;
+}
+
+function buildQuizReview(questions: QuizQuestion[], answers: QuizAnswerRow[]) {
+  const answersByQuestionId = new Map(
+    answers.map((answer) => [answer.question_id, answer])
+  );
+
+  return questions.map((question) => {
+    const answer = answersByQuestionId.get(question.id);
+    const selectedOption = String(answer?.selected_option || "").toUpperCase() || null;
+    const correctOption = String(question.correct_option || "").toUpperCase() || null;
+
+    return {
+      question_id: question.id,
+      question: question.question,
+      selected_option: selectedOption,
+      selected_answer: getOptionText(question, selectedOption),
+      correct_option: correctOption,
+      correct_answer: getOptionText(question, correctOption),
+      is_correct: !!answer?.is_correct,
+    };
+  });
+}
+
+async function getSubmittedQuizReview(submissionId: string) {
+  const { data: answers, error } = await supabaseServer
+    .from("sod_quiz_answers")
+    .select(`
+      selected_option,
+      is_correct,
+      sod_quiz_questions (
+        id,
+        question,
+        option_a,
+        option_b,
+        option_c,
+        option_d,
+        correct_option
+      )
+    `)
+    .eq("submission_id", submissionId);
+
+  if (error) {
+    return { review: null, error };
+  }
+
+  const review = ((answers || []) as unknown as SubmittedQuizAnswer[])
+    .filter((answer) => getJoinedQuestion(answer))
+    .map((answer) => {
+      const question = getJoinedQuestion(answer)!;
+      const selectedOption = String(answer.selected_option || "").toUpperCase() || null;
+      const correctOption = String(question.correct_option || "").toUpperCase() || null;
+
+      return {
+        question_id: question.id,
+        question: question.question,
+        selected_option: selectedOption,
+        selected_answer: getOptionText(question, selectedOption),
+        correct_option: correctOption,
+        correct_answer: getOptionText(question, correctOption),
+        is_correct: !!answer.is_correct,
+      };
+    });
+
+  return { review, error: null };
+}
+
 export async function POST(req: Request) {
   const cookieStore = await cookies();
   const studentId = cookieStore.get("grcc_lms_student")?.value;
@@ -78,6 +182,7 @@ export async function POST(req: Request) {
         score: submission.score || 0,
         total: submission.total || rows.length,
         already_submitted: true,
+        review: (await getSubmittedQuizReview(submission.id)).review,
       },
       { status: 409 }
     );
@@ -112,7 +217,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const answerRows = rows.map((q) => {
+  const answerRows = (rows as QuizQuestion[]).map((q) => {
     const selected = String(answers[q.id] || "").toUpperCase();
     const correct = String(q.correct_option || "").toUpperCase();
     const isCorrect = selected && selected === correct;
@@ -172,5 +277,6 @@ export async function POST(req: Request) {
       malpracticeFlags,
       Number(activeSubmission.malpractice_flags) || 0
     ),
+    review: buildQuizReview(rows as QuizQuestion[], answerRows),
   });
 }

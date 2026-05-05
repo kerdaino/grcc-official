@@ -29,6 +29,16 @@ type Question = {
   option_d: string | null;
 };
 
+type ReviewItem = {
+  question_id: string;
+  question: string;
+  selected_option: string | null;
+  selected_answer: string | null;
+  correct_option: string | null;
+  correct_answer: string | null;
+  is_correct: boolean;
+};
+
 export default function LMSQuizPage() {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -40,6 +50,7 @@ export default function LMSQuizPage() {
   const [starting, setStarting] = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [submission, setSubmission] = useState<SubmissionState | null>(null);
+  const [review, setReview] = useState<ReviewItem[]>([]);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [malpracticeFlags, setMalpracticeFlags] = useState(0);
   const [malpracticeWarning, setMalpracticeWarning] = useState("");
@@ -61,6 +72,7 @@ export default function LMSQuizPage() {
     setQuiz(data.quiz || null);
     setQuestions(data.questions || []);
     setSubmission(data.submission || null);
+    setReview(data.submission?.submitted_at ? data.review || [] : []);
     setAlreadySubmitted(!!data.already_submitted);
     setMalpracticeFlags(Math.max(0, Number(data.submission?.malpractice_flags) || 0));
     setMalpracticeWarning("");
@@ -118,6 +130,7 @@ export default function LMSQuizPage() {
           score: data.score || 0,
           total: data.total || questions.length,
         });
+        setReview(data.review || []);
       } else {
         setMsg(data?.message || "Failed to start quiz");
       }
@@ -168,6 +181,7 @@ export default function LMSQuizPage() {
           score: data.score || 0,
           total: data.total || questions.length,
         });
+        setReview(data.review || []);
       } else {
         setMsg(data?.message || "Failed to submit quiz");
       }
@@ -179,6 +193,7 @@ export default function LMSQuizPage() {
       score: data.score,
       total: data.total,
     });
+    setReview(data.review || []);
     setAlreadySubmitted(true);
     setSubmission((prev) => ({
       started_at: prev?.started_at || null,
@@ -345,6 +360,10 @@ export default function LMSQuizPage() {
       : null;
   const availabilityTimeLeftText = formatDuration(availabilityTimeLeft);
   const attemptDurationText = `${quiz?.duration_minutes || 20} minutes`;
+  const completionTitle = alreadySubmitted ? "Already Completed" : "Quiz Submitted";
+  const completionMessage = alreadySubmitted
+    ? "This quiz has already been submitted and cannot be retaken."
+    : "This quiz is now closed for your account.";
 
   return (
     <LMSLayout>
@@ -360,21 +379,55 @@ export default function LMSQuizPage() {
           <p className="text-red-700">{msg}</p>
         ) : !quiz ? (
           <p className="text-slate-600">No quiz has been published yet.</p>
-        ) : alreadySubmitted && result ? (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6">
-            <h2 className="text-2xl font-extrabold text-slate-900">Already Completed</h2>
-            <p className="mt-3 text-slate-700">
-              Your score: <strong>{result.score}</strong> / {result.total}
-            </p>
-            <p className="mt-2 text-slate-600">This quiz has already been submitted and cannot be retaken.</p>
-          </div>
         ) : result ? (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6">
-            <h2 className="text-2xl font-extrabold text-slate-900">Quiz Submitted ✅</h2>
-            <p className="mt-3 text-slate-700">
-              Your score: <strong>{result.score}</strong> / {result.total}
-            </p>
-            <p className="mt-2 text-slate-600">This quiz is now closed for your account.</p>
+          <div className="space-y-6">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6">
+              <h2 className="text-2xl font-extrabold text-slate-900">{completionTitle}</h2>
+              <p className="mt-3 text-slate-700">
+                Your score: <strong>{result.score}</strong> / {result.total}
+              </p>
+              <p className="mt-2 text-slate-600">{completionMessage}</p>
+            </div>
+
+            {review.length > 0 ? (
+              <div className="space-y-4">
+                <h3 className="text-xl font-extrabold text-slate-900">Answer Review</h3>
+                {review.map((item, index) => (
+                  <div key={item.question_id} className="rounded-xl border bg-slate-50 p-5">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <p className="font-semibold text-slate-900">
+                        {index + 1}. {item.question}
+                      </p>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-bold ${
+                          item.is_correct
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {item.is_correct ? "Correct" : "Wrong"}
+                      </span>
+                    </div>
+                    <div className="mt-4 grid gap-3 text-sm text-slate-700 md:grid-cols-2">
+                      <div className="rounded-lg bg-white p-4">
+                        <p className="font-semibold text-slate-900">Your answer</p>
+                        <p className="mt-1">
+                          {item.selected_option ? `${item.selected_option}. ` : ""}
+                          {item.selected_answer || "Not answered"}
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-white p-4">
+                        <p className="font-semibold text-slate-900">Correct answer</p>
+                        <p className="mt-1">
+                          {item.correct_option ? `${item.correct_option}. ` : ""}
+                          {item.correct_answer || "No answer recorded"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
         ) : !hasStarted ? (
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-6">
