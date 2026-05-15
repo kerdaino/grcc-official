@@ -61,8 +61,8 @@ export async function POST(req: Request) {
 
   const subject =
     decision === "admitted"
-      ? "School of Discovery — Admission Update"
-      : "School of Discovery — Application Update";
+      ? "Realms School of Discovery — Admission Update"
+      : "Realms School of Discovery — Application Update";
 
   const html =
     decision === "admitted"
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
 
           <p>
             We are pleased to inform you that you have been <strong>admitted</strong> into the 
-            <strong>School of Discovery</strong>.
+            <strong>Realms School of Discovery</strong> under Gloryrealm Christian Centre.
           </p>
 
           <p>
@@ -138,7 +138,7 @@ export async function POST(req: Request) {
 
           <p>
             Blessings,<br/>
-            <strong>GRCC Admin</strong>
+            <strong>Realms School of Discovery Admin</strong>
           </p>
         </div>
       `
@@ -147,7 +147,7 @@ export async function POST(req: Request) {
           <h2>Application Update</h2>
           <p>Dear <b>${applicantName}</b>,</p>
           <p>
-            Thank you for your interest in the School of Discovery.
+            Thank you for your interest in Realms School of Discovery.
             After review, you are currently marked as <b>NOT ADMITTED</b>.
           </p>
           <p>
@@ -155,7 +155,7 @@ export async function POST(req: Request) {
           </p>
           <p style="margin-top: 18px">
             Blessings,<br/>
-            <b>GRCC Admin</b>
+            <b>Realms School of Discovery Admin</b>
           </p>
         </div>
       `;

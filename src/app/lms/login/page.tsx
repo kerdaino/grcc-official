@@ -49,13 +49,13 @@ export default function LMSLoginPage() {
       <div className="mx-auto max-w-md">
         <div className="rounded-3xl border border-white/10 bg-white p-8 shadow-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-700">
-            GRCC LMS
+            Realms Institute LMS
           </p>
           <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
             Student Login
           </h1>
           <p className="mt-2 text-slate-600">
-            Access your School of Discovery dashboard, class schedule, recordings, quizzes, and final exam.
+            Access your Realms School of Discovery dashboard, class schedule, recordings, quizzes, and final exam.
           </p>
 
           {msg ? (

@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const adminLinks = [
   {
-    title: "School of Discovery",
+    title: "Realms School of Discovery",
     desc: "Review applications, admit or reject applicants, and manage the onboarding workflow.",
     href: "/admin/school-of-discovery",
     color: "from-teal-600 to-cyan-600",
@@ -55,7 +55,7 @@ const adminLinks = [
 },
 {
   title: "LMS Schedule",
-  desc: "Manage School of Discovery schedule, class dates, and session details.",
+  desc: "Manage Realms School of Discovery schedule, class dates, and session details.",
   href: "/admin/lms/schedule",
   color: "from-violet-600 to-purple-600",
   icon: "fa-solid fa-calendar-days",
@@ -69,7 +69,7 @@ const adminLinks = [
 },
 {
   title: "LMS Recordings",
-  desc: "Manage and publish School of Discovery class recordings.",
+  desc: "Manage and publish Realms School of Discovery class recordings.",
   href: "/admin/lms/recordings",
   color: "from-pink-600 to-rose-600",
   icon: "fa-solid fa-circle-play",
@@ -102,6 +102,13 @@ const adminLinks = [
   color: "from-blue-600 to-indigo-600",
   icon: "fa-solid fa-square-poll-vertical",
 },
+{
+  title: "LMS Results & Certificates",
+  desc: "View overall LMS performance, certificate eligibility, and certificate type.",
+  href: "/admin/lms/results",
+  color: "from-purple-600 to-violet-600",
+  icon: "fa-solid fa-award",
+},
 ];
 
 export default function AdminDashboardPage() {
@@ -114,7 +121,7 @@ export default function AdminDashboardPage() {
     <main>
       <PageHero
         title="Admin Dashboard"
-        subtitle="Manage School of Discovery, sermons, events, blog content, gallery, and other site sections."
+        subtitle="Manage Realms School of Discovery, sermons, events, blog content, gallery, and other site sections."
       />
 
       <section className="bg-white">

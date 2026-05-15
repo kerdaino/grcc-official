@@ -75,10 +75,10 @@ export async function POST(req: Request) {
       from,
       to: row.email,
       replyTo,
-      subject: "School of Discovery — Onboarding Instructions",
+      subject: "Realms School of Discovery — Onboarding Instructions",
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2>Welcome to School of Discovery 🎉</h2>
+          <h2>Welcome to Realms School of Discovery 🎉</h2>
 
           <p>Dear <strong>${row.name}</strong>,</p>
 
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
           </p>
 
           <p>
-            We are excited to have you join this journey of spiritual growth and transformation.
+            We are excited to have you join Realms School of Discovery under Gloryrealm Christian Centre.
           </p>
 
           <hr />
@@ -136,7 +136,7 @@ export async function POST(req: Request) {
 
           <p>
             Blessings,<br/>
-            <strong>GRCC Admin</strong>
+            <strong>Realms School of Discovery Admin</strong>
           </p>
         </div>
       `,

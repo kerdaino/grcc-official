@@ -11,6 +11,7 @@ const links = [
   { href: "/lms/recordings", label: "Recordings", icon: "fa-solid fa-circle-play" },
   { href: "/lms/quiz", label: "Quiz", icon: "fa-solid fa-file-pen" },
   { href: "/lms/exam", label: "Final Exam", icon: "fa-solid fa-graduation-cap" },
+  { href: "/lms/certificate", label: "Certificate", icon: "fa-solid fa-award" },
 ];
 
 export default function LMSSidebar() {
@@ -20,9 +21,9 @@ export default function LMSSidebar() {
     <aside className="w-full border-r bg-slate-950 text-white md:w-72">
       <div className="border-b border-white/10 px-6 py-6">
         <p className="text-xs uppercase tracking-[0.2em] text-white/60">
-          GRCC LMS
+          Realms Institute LMS
         </p>
-        <h2 className="mt-2 text-2xl font-extrabold">School of Discovery</h2>
+        <h2 className="mt-2 text-2xl font-extrabold">Realms School of Discovery</h2>
         <p className="mt-2 text-sm text-white/70">Student Learning Portal</p>
       </div>
 

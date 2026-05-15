@@ -106,7 +106,7 @@ export default function AdminLMSSchedulePage() {
     <main>
       <PageHero
         title="Admin — LMS Schedule"
-        subtitle="Manage School of Discovery class schedule."
+        subtitle="Manage Realms School of Discovery class schedule."
       />
 
       <section className="bg-white">

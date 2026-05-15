@@ -166,7 +166,7 @@ export default function AdminSODPage() {
   return (
     <main>
       <PageHero
-        title="Admin — School of Discovery"
+        title="Admin — Realms School of Discovery"
         subtitle="Review applications, set admission decision, and trigger emails."
       />
 

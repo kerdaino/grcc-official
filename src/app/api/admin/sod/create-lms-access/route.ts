@@ -119,7 +119,7 @@ export async function POST(req: Request) {
       from,
       to: normalizedEmail,
       replyTo,
-      subject: "School of Discovery — LMS Login Details",
+      subject: "Realms School of Discovery — LMS Login Details",
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
           <h2>Your LMS Access Is Ready ✅</h2>
@@ -127,7 +127,7 @@ export async function POST(req: Request) {
           <p>Dear <strong>${applicant.name}</strong>,</p>
 
           <p>
-            Your School of Discovery LMS access has been created successfully.
+            Your Realms School of Discovery LMS access through Realms Institute has been created successfully.
           </p>
 
           <p><strong>Login Details</strong></p>
@@ -152,7 +152,7 @@ export async function POST(req: Request) {
 
           <p style="margin-top: 18px;">
             Blessings,<br/>
-            <strong>GRCC Admin</strong>
+            <strong>Realms School of Discovery Admin</strong>
           </p>
         </div>
       `,

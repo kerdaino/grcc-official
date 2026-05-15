@@ -111,7 +111,7 @@ export default function AdminLMSRecordingsPage() {
     <main>
       <PageHero
         title="Admin — LMS Recordings"
-        subtitle="Manage School of Discovery class recordings."
+        subtitle="Manage Realms School of Discovery class recordings."
       />
 
       <section className="bg-white">

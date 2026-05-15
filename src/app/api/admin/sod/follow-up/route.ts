@@ -49,16 +49,16 @@ export async function POST(req: Request) {
       from,
       to: applicant.email,
       replyTo,
-      subject: "Reminder — School of Discovery Enrollment",
+      subject: "Reminder — Realms School of Discovery Enrollment",
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-  <h2>Reminder — School of Discovery Enrollment</h2>
+  <h2>Reminder — Realms School of Discovery Enrollment</h2>
 
   <p>Dear ${applicant.name},</p>
 
   <p>
     This is a reminder to complete your enrollment for the
-    <strong>School of Discovery</strong>.
+    <strong>Realms School of Discovery</strong>.
   </p>
 
   <p>
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
 
   <p>
     Blessings,<br />
-    <strong>GRCC Admin</strong>
+    <strong>Realms School of Discovery Admin</strong>
   </p>
 </div>
       `,
