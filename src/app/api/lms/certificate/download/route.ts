@@ -11,7 +11,11 @@ import {
 import { ensureCertificateForStudent } from "@/lib/lmsCertificates";
 
 const CERTIFICATE_LOGO_PATH = "public/images/logo4.png";
+const CERTIFICATE_SIGNATURE_PATH =
+  "public/images/signatures/tobi-adekunle-signature.png";
 const CERTIFICATE_PARENT_MINISTRY = "Gloryrealm Christian Centre";
+const CERTIFICATE_SIGNATURE_NAME = "Tobi Adekunle";
+const CERTIFICATE_SIGNATURE_TITLE = "Realms School of Discovery Admin";
 
 function formatDate(value: string | null) {
   if (!value) return "";
@@ -63,6 +67,18 @@ async function embedCertificateLogo(pdfDoc: PDFDocument) {
   }
 }
 
+async function embedCertificateSignature(pdfDoc: PDFDocument) {
+  try {
+    const signatureBytes = await readFile(
+      path.join(process.cwd(), CERTIFICATE_SIGNATURE_PATH)
+    );
+
+    return pdfDoc.embedPng(signatureBytes);
+  } catch {
+    return null;
+  }
+}
+
 export async function GET() {
   const cookieStore = await cookies();
   const studentId = cookieStore.get("grcc_lms_student")?.value;
@@ -100,6 +116,7 @@ export async function GET() {
   const sansBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const qrImage = await pdfDoc.embedPng(qrImageBytes);
   const logoImage = await embedCertificateLogo(pdfDoc);
+  const signatureImage = await embedCertificateSignature(pdfDoc);
   const purple = rgb(0.28, 0.12, 0.58);
   const gold = rgb(0.83, 0.62, 0.13);
   const slate = rgb(0.2, 0.25, 0.33);
@@ -250,21 +267,56 @@ export async function GET() {
     color: rgb(0.39, 0.45, 0.55),
   });
 
+  const signatureLineStart = 560;
+  const signatureLineEnd = 754;
+  const signatureLineY = 128;
+  const signatureLineWidth = signatureLineEnd - signatureLineStart;
+
+  if (signatureImage) {
+    const maxSignatureWidth = 150;
+    const maxSignatureHeight = 44;
+    const signatureScale = Math.min(
+      maxSignatureWidth / signatureImage.width,
+      maxSignatureHeight / signatureImage.height
+    );
+    const signatureWidth = signatureImage.width * signatureScale;
+    const signatureHeight = signatureImage.height * signatureScale;
+
+    page.drawImage(signatureImage, {
+      x: signatureLineStart + (signatureLineWidth - signatureWidth) / 2,
+      y: signatureLineY + 8,
+      width: signatureWidth,
+      height: signatureHeight,
+    });
+  } else {
+    page.drawText(CERTIFICATE_SIGNATURE_NAME, {
+      x:
+        signatureLineStart +
+        (signatureLineWidth -
+          serif.widthOfTextAtSize(CERTIFICATE_SIGNATURE_NAME, 16)) /
+          2,
+      y: signatureLineY + 16,
+      size: 16,
+      font: serif,
+      color: rgb(0.06, 0.09, 0.16),
+    });
+  }
+
   page.drawLine({
-    start: { x: 560, y: 128 },
-    end: { x: 754, y: 128 },
+    start: { x: signatureLineStart, y: signatureLineY },
+    end: { x: signatureLineEnd, y: signatureLineY },
     thickness: 1,
     color: slate,
   });
-  page.drawText(certificate.admin_acknowledgement, {
-    x: 560,
+  page.drawText(CERTIFICATE_SIGNATURE_NAME, {
+    x: signatureLineStart,
     y: 105,
     size: 13,
     font: sansBold,
     color: rgb(0.06, 0.09, 0.16),
   });
-  page.drawText("Admin Acknowledgement", {
-    x: 560,
+  page.drawText(CERTIFICATE_SIGNATURE_TITLE, {
+    x: signatureLineStart,
     y: 87,
     size: 10,
     font: sans,
