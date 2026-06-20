@@ -65,11 +65,16 @@ export default function AdminLMSResultsPage() {
   const [rows, setRows] = useState<ResultRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
+  const [msgTone, setMsgTone] = useState<"error" | "success">("error");
   const [q, setQ] = useState("");
+  const [processingStudentId, setProcessingStudentId] = useState<string | null>(
+    null
+  );
 
   async function load() {
     setLoading(true);
     setMsg("");
+    setMsgTone("error");
 
     const res = await fetch("/api/admin/lms/results/summary", {
       cache: "no-store",
@@ -78,6 +83,7 @@ export default function AdminLMSResultsPage() {
 
     if (!res.ok || !data?.ok) {
       setMsg(data?.message || "Failed to load LMS results");
+      setMsgTone("error");
       setLoading(false);
       return;
     }
@@ -87,8 +93,40 @@ export default function AdminLMSResultsPage() {
   }
 
   useEffect(() => {
-    load();
+    const timeout = window.setTimeout(() => {
+      void load();
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
   }, []);
+
+  async function recalculateCertificate(studentId: string) {
+    setProcessingStudentId(studentId);
+    setMsg("");
+    setMsgTone("error");
+
+    const res = await fetch(
+      "/api/admin/lms/results/recalculate-certificate",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ student_id: studentId }),
+      }
+    );
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data?.ok) {
+      setMsg(data?.message || "Failed to generate certificate");
+      setMsgTone("error");
+      setProcessingStudentId(null);
+      return;
+    }
+
+    await load();
+    setMsg("Certificate generated / recalculated successfully.");
+    setMsgTone("success");
+    setProcessingStudentId(null);
+  }
 
   const filtered = useMemo(() => {
     const text = q.trim().toLowerCase();
@@ -135,7 +173,13 @@ export default function AdminLMSResultsPage() {
           </div>
 
           {msg ? (
-            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+            <div
+              className={`mb-6 rounded-lg border p-4 ${
+                msgTone === "success"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-red-200 bg-red-50 text-red-700"
+              }`}
+            >
               {msg}
             </div>
           ) : null}
@@ -263,6 +307,17 @@ export default function AdminLMSResultsPage() {
                                 View Certificate
                               </a>
                             ) : null}
+                            <button
+                              onClick={() =>
+                                recalculateCertificate(row.student.id)
+                              }
+                              disabled={processingStudentId === row.student.id}
+                              className="mt-3 inline-flex rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                            >
+                              {processingStudentId === row.student.id
+                                ? "Generating..."
+                                : "Generate / Recalculate Certificate"}
+                            </button>
                           </td>
                         </tr>
                       );

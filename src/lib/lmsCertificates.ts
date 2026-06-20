@@ -1,7 +1,12 @@
+import "server-only";
 import { randomBytes } from "crypto";
 import {
+  getRequiredAssessmentStatus,
   getLmsResultSummaryForStudent,
+  getSubmittedExamResults,
+  getSubmittedQuizResults,
   getStudentForLmsResult,
+  calculateLmsResultSummary,
 } from "@/lib/lmsResults";
 import { supabaseServer } from "@/lib/supabaseServer";
 
@@ -151,15 +156,95 @@ export async function ensureCertificateForStudent(studentId: string) {
     };
   }
 
-  const code = createCertificateCode();
+  const generated = await generateOrUpdateStudentCertificate(student.id);
+
+  return {
+    certificate: generated.certificate,
+    error: generated.error,
+    status: generated.status,
+  };
+}
+
+export async function generateOrUpdateStudentCertificate(studentId: string) {
+  const { data: student, error: studentError } =
+    await getStudentForLmsResult(studentId);
+
+  if (studentError) {
+    return { certificate: null, summary: null, error: studentError, status: 500 };
+  }
+
+  if (!student) {
+    return {
+      certificate: null,
+      summary: null,
+      error: new Error("Student not found."),
+      status: 404,
+    };
+  }
+
+  const [quizResult, examResult, existingResult] = await Promise.all([
+    getSubmittedQuizResults(student.id),
+    getSubmittedExamResults(student.id),
+    getCertificateByStudentId(student.id),
+  ]);
+
+  if (quizResult.error) {
+    return { certificate: null, summary: null, error: quizResult.error, status: 500 };
+  }
+
+  if (examResult.error) {
+    return { certificate: null, summary: null, error: examResult.error, status: 500 };
+  }
+
+  if (existingResult.error) {
+    return {
+      certificate: null,
+      summary: null,
+      error: existingResult.error,
+      status: 500,
+    };
+  }
+
+  const quizSubmissions = quizResult.data || [];
+  const examSubmissions = examResult.data || [];
+
+  if (examSubmissions.length === 0) {
+    return {
+      certificate: null,
+      summary: null,
+      error: new Error("Final exam submission not found."),
+      status: 409,
+    };
+  }
+
+  const { status: assessmentStatus, error: assessmentStatusError } =
+    await getRequiredAssessmentStatus(student.id, quizSubmissions, examSubmissions);
+
+  if (assessmentStatusError) {
+    return {
+      certificate: null,
+      summary: null,
+      error: assessmentStatusError,
+      status: 500,
+    };
+  }
+
+  const summary = calculateLmsResultSummary(
+    student,
+    quizSubmissions,
+    examSubmissions,
+    assessmentStatus || undefined
+  );
   const certificateType = summary.eligible_for_completion_certificate
     ? "Certificate of Completion"
     : "Certificate of Participation";
-  const verificationUrl = getVerificationUrl(code);
+  const code = existingResult.data?.certificate_code || createCertificateCode();
+  const verificationUrl =
+    existingResult.data?.verification_url || getVerificationUrl(code);
 
-  const { data: certificate, error: insertError } = await supabaseServer
+  const { data: certificate, error: upsertError } = await supabaseServer
     .from("sod_certificates")
-    .insert([
+    .upsert(
       {
         student_id: student.id,
         certificate_type: certificateType,
@@ -169,19 +254,21 @@ export async function ensureCertificateForStudent(studentId: string) {
         certificate_code: code,
         verification_url: verificationUrl,
       },
-    ])
+      { onConflict: "student_id" }
+    )
     .select(
       "id, student_id, certificate_type, overall_score, quiz_average, exam_score, certificate_code, verification_url, issued_at, created_at"
     )
     .single<SodCertificateRow>();
 
-  if (insertError) {
-    return { certificate: null, error: insertError, status: 500 };
+  if (upsertError) {
+    return { certificate: null, summary, error: upsertError, status: 500 };
   }
 
   return {
     certificate: await hydrateCertificate(certificate),
+    summary,
     error: null,
-    status: 201,
+    status: existingResult.data ? 200 : 201,
   };
 }

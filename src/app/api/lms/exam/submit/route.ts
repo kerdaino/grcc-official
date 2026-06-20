@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { generateOrUpdateStudentCertificate } from "@/lib/lmsCertificates";
 import { supabaseServer } from "@/lib/supabaseServer";
 
 type ExamQuestion = {
@@ -171,6 +172,15 @@ export async function POST(req: Request) {
   }
 
   if (submission?.submitted_at) {
+    const certificateResult = await generateOrUpdateStudentCertificate(studentId);
+
+    if (certificateResult.error) {
+      return NextResponse.json(
+        { ok: false, message: certificateResult.error.message },
+        { status: certificateResult.status }
+      );
+    }
+
     return NextResponse.json(
       {
         ok: false,
@@ -178,6 +188,7 @@ export async function POST(req: Request) {
         score: submission.score || 0,
         total: submission.total || rows.length,
         already_submitted: true,
+        certificate: certificateResult.certificate,
         review: (await getSubmittedExamReview(submission.id)).review,
       },
       { status: 409 }
@@ -278,6 +289,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: updateError.message }, { status: 500 });
   }
 
+  const certificateResult = await generateOrUpdateStudentCertificate(studentId);
+
+  if (certificateResult.error) {
+    return NextResponse.json(
+      { ok: false, message: certificateResult.error.message },
+      { status: certificateResult.status }
+    );
+  }
+
   return NextResponse.json({
     ok: true,
     score,
@@ -287,6 +307,7 @@ export async function POST(req: Request) {
       malpracticeFlags,
       Number(activeSubmission.malpractice_flags) || 0
     ),
+    certificate: certificateResult.certificate,
     review: buildExamReview(rows as ExamQuestion[], answerRows),
   });
 }
