@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { getActiveExamOverrideForStudent } from "@/lib/lmsExamOverrides";
 import { supabaseServer } from "@/lib/supabaseServer";
 
 type ExamReviewAnswer = {
@@ -95,16 +96,48 @@ export async function GET() {
     return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: exam, error: examError } = await supabaseServer
-    .from("sod_exams")
-    .select("*")
-    .eq("is_published", true)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  let exam = null;
 
-  if (examError) {
-    return NextResponse.json({ ok: false, message: examError.message }, { status: 500 });
+  const { data: override, error: overrideError } =
+    await getActiveExamOverrideForStudent(studentId);
+
+  if (overrideError) {
+    return NextResponse.json({ ok: false, message: overrideError.message }, { status: 500 });
+  }
+
+  if (override) {
+    const { data: overrideExam, error: overrideExamError } = await supabaseServer
+      .from("sod_exams")
+      .select("*")
+      .eq("id", override.exam_id)
+      .maybeSingle();
+
+    if (overrideExamError) {
+      return NextResponse.json(
+        { ok: false, message: overrideExamError.message },
+        { status: 500 }
+      );
+    }
+
+    exam = overrideExam;
+  }
+
+  if (!exam) {
+    const nowIso = new Date().toISOString();
+    const { data: publishedExam, error: examError } = await supabaseServer
+      .from("sod_exams")
+      .select("*")
+      .eq("is_published", true)
+      .gt("available_until", nowIso)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (examError) {
+      return NextResponse.json({ ok: false, message: examError.message }, { status: 500 });
+    }
+
+    exam = publishedExam;
   }
 
   if (!exam) {

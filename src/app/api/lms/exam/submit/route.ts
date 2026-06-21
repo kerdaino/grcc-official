@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { generateOrUpdateStudentCertificate } from "@/lib/lmsCertificates";
+import { hasActiveExamOverride } from "@/lib/lmsExamOverrides";
 import { supabaseServer } from "@/lib/supabaseServer";
 
 type ExamQuestion = {
@@ -127,9 +128,8 @@ export async function POST(req: Request) {
 
   const { data: exam, error: examError } = await supabaseServer
     .from("sod_exams")
-    .select("id, is_published, duration_minutes")
+    .select("id, is_published, duration_minutes, available_until")
     .eq("id", examId)
-    .eq("is_published", true)
     .maybeSingle();
 
   if (examError) {
@@ -137,6 +137,24 @@ export async function POST(req: Request) {
   }
 
   if (!exam) {
+    return NextResponse.json({ ok: false, message: "Final exam not found." }, { status: 404 });
+  }
+
+  const availableUntilMs = exam.available_until
+    ? new Date(exam.available_until).getTime()
+    : Number.NaN;
+  const isGenerallyAvailable =
+    !!exam.is_published &&
+    !Number.isNaN(availableUntilMs) &&
+    Date.now() <= availableUntilMs;
+  const { allowed: hasOverride, error: overrideError } =
+    await hasActiveExamOverride(studentId, examId);
+
+  if (overrideError) {
+    return NextResponse.json({ ok: false, message: overrideError.message }, { status: 500 });
+  }
+
+  if (!isGenerallyAvailable && !hasOverride) {
     return NextResponse.json({ ok: false, message: "Final exam not found." }, { status: 404 });
   }
 

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 type ResultSubmission = {
   id: string;
+  assessment_id: string | null;
   assessment_type: "quiz" | "final_exam";
   title: string;
   score: number;
@@ -124,6 +125,47 @@ export default function AdminLMSResultsPage() {
 
     await load();
     setMsg("Certificate generated / recalculated successfully.");
+    setMsgTone("success");
+    setProcessingStudentId(null);
+  }
+
+  async function resetExamAttempt(row: ResultRow, submission: ResultSubmission) {
+    const confirmed = confirm(
+      `Reset the final exam attempt for ${
+        row.student.full_name || row.student.email || "this student"
+      }? This will delete only this student's final exam answers, submission, and generated certificate.`
+    );
+
+    if (!confirmed) return;
+
+    const grantOverride = confirm(
+      "If the final exam is no longer published/available, grant this student a 72-hour retake override?"
+    );
+
+    setProcessingStudentId(row.student.id);
+    setMsg("");
+    setMsgTone("error");
+
+    const res = await fetch("/api/admin/lms/results/reset-exam-attempt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        student_id: row.student.id,
+        submission_id: submission.id,
+        grant_override: grantOverride,
+      }),
+    });
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data?.ok) {
+      setMsg(data?.message || "Failed to reset final exam attempt");
+      setMsgTone("error");
+      setProcessingStudentId(null);
+      return;
+    }
+
+    await load();
+    setMsg(data.message || "Final exam attempt reset successfully.");
     setMsgTone("success");
     setProcessingStudentId(null);
   }
@@ -318,6 +360,19 @@ export default function AdminLMSResultsPage() {
                                 ? "Generating..."
                                 : "Generate / Recalculate Certificate"}
                             </button>
+                            {finalExam ? (
+                              <button
+                                onClick={() => resetExamAttempt(row, finalExam)}
+                                disabled={
+                                  processingStudentId === row.student.id
+                                }
+                                className="mt-3 inline-flex rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+                              >
+                                {processingStudentId === row.student.id
+                                  ? "Processing..."
+                                  : "Reset Exam Attempt"}
+                              </button>
+                            ) : null}
                           </td>
                         </tr>
                       );
