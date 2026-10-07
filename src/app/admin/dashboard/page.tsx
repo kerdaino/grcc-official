@@ -5,6 +5,13 @@ import Link from "next/link";
 
 const adminLinks = [
   {
+    title: "Inaugural Service",
+    desc: "Review attendance registrations, accommodation requests, and travel guidance needs.",
+    href: "/admin/inaugural-service",
+    color: "from-fuchsia-600 to-purple-700",
+    icon: "fa-solid fa-church",
+  },
+  {
     title: "Realms School of Discovery",
     desc: "Review applications, admit or reject applicants, and manage the onboarding workflow.",
     href: "/admin/school-of-discovery",
