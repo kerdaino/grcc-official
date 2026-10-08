@@ -146,7 +146,7 @@ export default function InauguralServicePage() {
             <div className="mt-7 space-y-5 leading-relaxed text-slate-700">
               <div>
                 <p className="font-bold text-slate-950">Venue:</p>
-                <address className="not-italic">No. 3 Shina Olaogun Street,<br />Along Ope Ilu Road,<br />Agbado, Ogun State.</address>
+                <address className="not-italic">266, Balogun Bus Stop, Along Ope Ilu Road,<br />Agbado, Ogun State, Nigeria.</address>
               </div>
               <p>Our team will send important programme updates and travel information to your WhatsApp number before the programme.</p>
               <p>If you requested accommodation or transportation guidance, a member of the team will contact you separately.</p>
