@@ -1,174 +1,76 @@
-# 🌍 GRCC Website (Gloryrealm Christian Centre)
+# Gloryrealm Christian Centre Website
 
-A full-featured modern church website built with **Next.js**, designed to support ministry operations, discipleship systems, and digital outreach.
+The public website and digital operations platform for Gloryrealm Christian Centre.
 
----
+Live site: https://grcc-official.vercel.app/
 
-## 🚀 Overview
+## Delivered now
 
-The GRCC Website is more than a static site — it is a **ministry platform** that supports:
+- Responsive public ministry website
+- Sermon publishing and individual sermon pages
+- Events, ministries, gallery, blog and contact sections
+- School of Discovery information and application workflows
+- Contact and ministry application handling
+- Administrative routes for supported operational workflows
+- Supabase-backed data and storage integrations
+- Resend email integration
+- Public inaugural-service registration with server-side validation
+- Protected registration listing, filtering, summaries and CSV export
+- Idempotent registration references for retry-safe submission handling
 
-- Church visibility and outreach
-- School of Discovery (discipleship system)
-- Sermon publishing and media distribution
-- Blog content and teachings
-- Workforce (ministries) onboarding system
-- Contact and communication pipeline
+## In development or dependent on configuration
 
-Built with scalability in mind, this system is structured to grow into a **full ministry ecosystem**.
+- Additional content-management expansion
+- Further role-based administration improvements
+- Payment functionality where separately configured and verified
+- Database-driven sections that are not yet populated on the public site
 
----
+These items must not be presented as delivered production functionality until their configuration, migration and live behavior have been verified.
 
-## 🛠 Tech Stack
+## Planned
 
-- **Framework:** Next.js (App Router)
-- **Styling:** Tailwind CSS
-- **Database:** Supabase (PostgreSQL)
-- **Storage:** Supabase Storage
-- **Email Service:** Resend
-- **Authentication:** Cookie-based (Admin & Workforce)
-- **Deployment:** Vercel (recommended)
+- Continued expansion of the ministry platform as operational requirements are approved
+- Additional reporting, communication and content workflows
 
----
+Planned scope is directional and is not a delivery commitment.
 
-## 📂 Project Structure
-src/
-│
-├── app/
-│   ├── (public pages)
-│   │   ├── page.tsx (Homepage)
-│   │   ├── contact/
-│   │   ├── blog/
-│   │   ├── events/
-│   │   ├── gallery/
-│   │   ├── ministries/
-│   │   ├── sermons/
-│   │
-│   ├── admin/
-│   │   ├── page.tsx (Admin Dashboard)
-│   │   ├── school-of-discovery/
-│   │   ├── sermons/
-│   │   ├── contact/
-│   │   ├── ministries/
-│   │
-│   ├── api/
-│       ├── admin/
-│       ├── blog/
-│       ├── ministries/
-│       ├── contact/
-│
-├── components/
-│   ├── PageHero.tsx
-│   ├── Sections.tsx
-│
-├── lib/
-│   ├── supabaseServer.ts
-│   ├── password.ts
----
+## Technology
 
-## 🔑 Core Features
+- Next.js App Router and TypeScript
+- Tailwind CSS
+- Supabase/PostgreSQL and Supabase Storage
+- Resend
+- Server-side routes for privileged operations
+- Cookie-protected administrative access in the current implementation
 
-### 🏠 Homepage
-- Dynamic Verse of the Day
-- Upcoming Events (dynamic ready)
-- Latest Sermons (database-driven)
-- Blog highlights
+## Security and data boundaries
 
----
+- Service-role database access must remain server-only.
+- Public submission does not require anonymous database-read access.
+- Conditional fields are validated on the server.
+- Registration reference and idempotency constraints protect retry-sensitive flows.
+- Administrative list and export routes must retain their authentication boundary.
+- Never commit real credentials, private ministry records or participant data.
 
-### 📖 School of Discovery
-- Application system
-- Admin approval workflow
-- Email notifications
-- (Upcoming) Payment integration
+The current cookie-based administrative protection should be reviewed before treating it as a long-term role-based authentication system.
 
----
+## Local setup
 
-### 🎙 Sermons
-- Admin upload system
-- YouTube & audio support
-- Publish/unpublish control
+1. Create .env.local with the required Supabase, Resend, admin and site configuration.
+2. Install dependencies with npm install.
+3. Run npm run dev.
+4. Open http://localhost:3000.
 
----
+## Useful checks
 
-### 📝 Blog System
-- Dynamic blog posts
-- Comment system with:
-  - Replies
-  - Likes
-  - Admin moderation
-- Spam protection
+    npm run lint
+    npx tsc --noEmit
+    npm run build
 
----
+Apply required migrations separately and verify protected routes with non-production data. Local checks do not prove that a migration or deployment is active.
 
-### 🖼 Gallery
-- Image upload via admin
-- Stored in Supabase Storage
-- Responsive display with modal viewer
+## Public-proof boundary
 
----
+Public pages and approved anonymised demonstrations may be used as project evidence. Do not publish registration records, contact messages, administrative data or unapproved internal ministry information. Do not claim attendance, conversion or engagement metrics without authorised records.
 
-### 📅 Events
-- Dynamic events system (DB-ready)
-- Individual event pages
-
----
-
-### 🙏 Ministries (Workforce System)
-- Application form
-- Admin approval system
-- Worker login
-- Worker dashboard
-- Department-based access
-
----
-
-### 📩 Contact System
-- Form submission
-- Saved to database
-- Admin email notification
-- Auto-reply email to sender
-- Admin dashboard view
-
----
-
-## 🔐 Admin System
-
-Protected via cookies (`grcc_admin`)
-
-Admin can manage:
-
-- School of Discovery applications
-- Sermons
-- Blog content (future expansion)
-- Ministries applications
-- Contact messages
-
----
-
-## 🔑 Environment Variables
-
-Create a `.env.local` file:
-
-```env
-# Supabase
-SUPABASE_URL=your_url
-SUPABASE_SERVICE_ROLE_KEY=your_key
-
-# Resend Email
-RESEND_API_KEY=your_resend_key
-RESEND_FROM_EMAIL=GRCC <onboarding@resend.dev>
-ADMIN_NOTIFY_EMAIL=your_email
-
-# Admin Auth
-ADMIN_PASSWORD=your_secure_password
-
-# Site URL
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-
-⚙️ Installation
-npm install
-npm run dev
-
-👨‍💻 Author
-KD Global(https://www.kdevglobal.com/)
+Developed by [KD Global](https://www.kdevglobal.com/).
