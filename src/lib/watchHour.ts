@@ -4,7 +4,6 @@ export const EVENT_DATES = "1–21 December 2026";
 export { CHURCH_ADDRESS as VENUE } from "./churchLocation";
 export const SESSION_TIMES = ["12:00 AM – 6:00 AM WAT", "12:00 PM – 6:00 PM WAT"];
 export const ARRIVAL = "Arrival is 1 December at 12:00 PM WAT.";
-export const FIRST_MIDNIGHT_NOTICE = "GRCC will confirm the date of the first midnight session.";
 export const ONLINE_NOTICE = "Online access details will be shared through official GRCC channels when available.";
 export const WELFARE_NOTICE = "Your request has been received and is awaiting confirmation. Please do not interpret registration as guaranteed sleeping-space allocation.";
 export const LODGING_NOTICE = "Church accommodation will be basic, shared camp-style lodging, subject to available space and confirmation by the Welfare Team. It does not automatically include private rooms, bedding, meals, or transport. Please prepare your personal essentials. Our team will communicate confirmed arrangements before your arrival.";

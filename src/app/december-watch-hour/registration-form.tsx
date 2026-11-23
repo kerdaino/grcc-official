@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent, type InputHTMLAttributes } from "react";
 import {
-  ARRIVAL, DAYS, DURATIONS, EVENT_DATES, FIRST_MIDNIGHT_NOTICE, LODGING, LODGING_NOTICE, MODES, ONLINE_NOTICE,
+  ARRIVAL, DAYS, DURATIONS, EVENT_DATES, LODGING, LODGING_NOTICE, MODES, ONLINE_NOTICE,
   SESSION_TIMES, VENUE, WELFARE_NOTICE, validateWatchHour,
 } from "@/lib/watchHour";
 
@@ -193,7 +193,6 @@ export default function RegistrationForm() {
       <p><strong>Attendance</strong> {MODES[registration.attendance_mode]}</p>
       <p><strong>Event dates</strong> {EVENT_DATES}</p>
       <ul className="list-disc pl-5">{SESSION_TIMES.map((time) => <li key={time}>{time}</li>)}</ul>
-      <p className="text-sm text-slate-600">{FIRST_MIDNIGHT_NOTICE}</p>
       {registration.physical_count > 0 && <div><p>{ARRIVAL}</p><p><strong>Venue</strong> {VENUE}</p></div>}
       {registration.online_count > 0 && <p>{ONLINE_NOTICE}</p>}
       {registration.accommodation_preference === "church" && <p className="rounded-lg bg-amber-50 p-4">{WELFARE_NOTICE}</p>}

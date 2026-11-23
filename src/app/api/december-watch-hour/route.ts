@@ -3,7 +3,7 @@ import { after, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { supabaseServer } from "@/lib/supabaseServer";
 import {
-  ARRIVAL, EVENT_DATES, EVENT_NAME, FIRST_MIDNIGHT_NOTICE, MODES, ONLINE_NOTICE, SESSION_TIMES, VENUE,
+  ARRIVAL, EVENT_DATES, EVENT_NAME, MODES, ONLINE_NOTICE, SESSION_TIMES, VENUE,
   validateWatchHour, WATCH_HOUR_TABLE, WELFARE_NOTICE,
 } from "@/lib/watchHour";
 
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
               text: [
                 `Thank you, ${value.full_name}. Your registration is confirmed.`,
                 `Registration reference: ${reference}`, `Attendance: ${MODES[value.attendance_mode]}`,
-                EVENT_DATES, ...SESSION_TIMES, FIRST_MIDNIGHT_NOTICE,
+                EVENT_DATES, ...SESSION_TIMES,
                 ...(value.physical_count ? [ARRIVAL, VENUE] : []),
                 ...(value.online_count ? [ONLINE_NOTICE] : []), ...(church ? [WELFARE_NOTICE] : []),
               ].join("\n"),
