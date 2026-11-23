@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { issueWatchHourSession, WATCH_HOUR_ADMIN_COOKIE, WATCH_HOUR_SESSION_SECONDS } from "@/lib/watchHourAdmin";
+
 export async function POST(req: Request) {
   const { password } = await req.json();
 
@@ -18,6 +20,17 @@ export async function POST(req: Request) {
     path: "/",
     maxAge: 60 * 60 * 24 * 7, // 7 days
   });
+
+  const session = issueWatchHourSession();
+  if (session) {
+    res.cookies.set(WATCH_HOUR_ADMIN_COOKIE, session, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+      maxAge: WATCH_HOUR_SESSION_SECONDS,
+    });
+  }
 
   return res;
 }

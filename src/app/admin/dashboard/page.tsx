@@ -5,6 +5,13 @@ import Link from "next/link";
 
 const adminLinks = [
   {
+    title: "December Watch-Hour Camp Meeting",
+    desc: "Review camp attendance, accommodation and welfare requests.",
+    href: "/admin/december-watch-hour",
+    color: "from-fuchsia-600 to-purple-700",
+    icon: "fa-solid fa-church",
+  },
+  {
     title: "Inaugural Service",
     desc: "Review attendance registrations, accommodation requests, and travel guidance needs.",
     href: "/admin/inaugural-service",
