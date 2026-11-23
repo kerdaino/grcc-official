@@ -24,6 +24,11 @@ export default function AdminInauguralServicePage() {
     setError("");
     try {
       const response = await fetch("/api/admin/inaugural-service/list", { cache: "no-store" });
+      if (response.status === 401) {
+        setRows([]);
+        window.location.replace("/admin");
+        return;
+      }
       const data = await response.json().catch(() => null);
       if (!response.ok || !data?.ok) throw new Error(data?.message || "Failed to load registrations.");
       setRows(data.rows ?? []);
