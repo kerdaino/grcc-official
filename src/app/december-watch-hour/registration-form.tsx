@@ -1,7 +1,6 @@
 "use client";
 
-import Script from "next/script";
-import { useRef, useState, type FormEvent, type InputHTMLAttributes } from "react";
+import { useEffect, useRef, useState, type FormEvent, type InputHTMLAttributes } from "react";
 import {
   ARRIVAL, DAYS, DURATIONS, EVENT_DATES, FIRST_MIDNIGHT_NOTICE, LODGING, LODGING_NOTICE, MODES, ONLINE_NOTICE,
   SESSION_TIMES, VENUE, WELFARE_NOTICE, validateWatchHour,
@@ -9,12 +8,47 @@ import {
 
 const control = "mt-1 block w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2 focus-visible:outline-2 focus-visible:outline-fuchsia-700";
 const button = "rounded-lg bg-fuchsia-800 px-5 py-3 font-semibold text-white hover:bg-fuchsia-900 disabled:opacity-60";
-const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim();
 type Validated = NonNullable<ReturnType<typeof validateWatchHour>["value"]>;
 type CampTurnstile = {
-  render: (container: HTMLElement, options: Record<string, string | (() => void | boolean)>) => string;
-  reset: (widget: string) => void;
+  render: (container: HTMLElement, options: Record<string, string | boolean | ((token: string) => void | boolean)>) => string;
+  remove: (widget: string) => void;
 };
+
+const getTurnstile = () => (window as Window & { turnstile?: CampTurnstile }).turnstile;
+let loadingTurnstile: Promise<CampTurnstile> | undefined;
+
+function loadTurnstile() {
+  const existing = getTurnstile();
+  if (existing) return Promise.resolve(existing);
+
+  loadingTurnstile ??= new Promise<CampTurnstile>((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    script.async = true;
+    const timeout = window.setTimeout(failed, 12000);
+
+    function failed() {
+      window.clearTimeout(timeout);
+      script.remove();
+      reject(new Error("Turnstile script unavailable"));
+    }
+
+    script.onload = () => {
+      const api = getTurnstile();
+      if (!api) return failed();
+      window.clearTimeout(timeout);
+      resolve(api);
+    };
+    script.onerror = failed;
+    document.head.append(script);
+  }).catch((error) => {
+    loadingTurnstile = undefined;
+    throw error;
+  });
+
+  return loadingTurnstile;
+}
 
 function Input({ label, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
   return <label className="block font-medium">{label}<input {...props} className={control} /></label>;
@@ -34,36 +68,70 @@ export default function RegistrationForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [securityError, setSecurityError] = useState("");
+  const [challengeAttempt, setChallengeAttempt] = useState(0);
   const [confirmation, setConfirmation] = useState<{ reference: string; registration: Validated }>();
   const processing = useRef(false);
   const submission = useRef<{ key: string; payload: string } | null>(null);
   const challenge = useRef<HTMLDivElement>(null);
-  const widget = useRef<{ api: CampTurnstile; id: string } | null>(null);
+  const challengeToken = useRef("");
   const confirmationHeading = useRef<HTMLHeadingElement>(null);
   const feedback = useRef<HTMLParagraphElement>(null);
   const physical = mode === "physical" || mode === "both";
   const church = physical && lodging === "church";
 
-  function setupChallenge() {
-    const api = (window as Window & { turnstile?: CampTurnstile }).turnstile;
-    if (!api || !siteKey || !challenge.current || widget.current) return;
-    try {
-      widget.current = {
-        api,
-        id: api.render(challenge.current, {
-          sitekey: siteKey, action: "watch_hour_registration",
-          size: challenge.current.clientWidth < 300 ? "compact" : "normal",
-          callback: () => setSecurityError(""),
-          "error-callback": () => {
-            setSecurityError("The security check failed. It will retry when possible. If the problem persists, reload this page.");
-            return true;
-          },
-          "expired-callback": () => setSecurityError("The security check expired. Wait for it to refresh before submitting."),
-        }),
-      };
-    } catch {
-      setSecurityError("The security check could not load. Reload this page and try again.");
+  const confirmed = !!confirmation;
+
+  useEffect(() => {
+    const container = challenge.current;
+    if (!siteKey || !container || confirmed) return;
+
+    let active = true;
+    let widget: { api: CampTurnstile; id: string } | undefined;
+
+    function challengeFailed(message: string) {
+      if (!active) return;
+      challengeToken.current = "";
+      setSecurityError(message);
     }
+
+    void loadTurnstile().then((api) => {
+      if (!active) return;
+      const id = api.render(container, {
+        sitekey: siteKey,
+        action: "watch_hour_registration",
+        size: container.clientWidth < 300 ? "compact" : "normal",
+        retry: "never",
+        "refresh-expired": "manual",
+        "refresh-timeout": "manual",
+        "response-field": false,
+        callback: (token) => {
+          if (!active) return;
+          challengeToken.current = token;
+          setSecurityError("");
+        },
+        "error-callback": () => {
+          challengeFailed("The security check failed. Retry it to continue.");
+          return true;
+        },
+        "expired-callback": () => challengeFailed("The security check expired. Retry it to continue."),
+        "timeout-callback": () => challengeFailed("The security check timed out. Retry it to continue."),
+      });
+      widget = { api, id };
+    }).catch(() => {
+      challengeFailed("The security check could not load. Check your connection and retry.");
+    });
+
+    return () => {
+      active = false;
+      challengeToken.current = "";
+      if (widget) widget.api.remove(widget.id);
+    };
+  }, [challengeAttempt, confirmed]);
+
+  function retryChallenge() {
+    challengeToken.current = "";
+    setSecurityError("");
+    setChallengeAttempt((attempt) => attempt + 1);
   }
 
   async function register(event: FormEvent<HTMLFormElement>) {
@@ -77,8 +145,7 @@ export default function RegistrationForm() {
       communication_consent: form.has("communication_consent"),
       needs_travel_guidance: form.get("travel") === "yes" ? true : form.get("travel") === "no" ? false : null,
     };
-    const turnstileToken = form.get("cf-turnstile-response");
-    delete (fields as Record<string, unknown>)["cf-turnstile-response"];
+    const turnstileToken = challengeToken.current;
     const payload = JSON.stringify(fields);
     if (submission.current?.payload !== payload) submission.current = { payload, key: crypto.randomUUID() };
     const validation = validateWatchHour({ ...fields, idempotency_key: submission.current.key });
@@ -113,7 +180,7 @@ export default function RegistrationForm() {
     } finally {
       processing.current = false;
       setBusy(false);
-      if (!completed && widget.current) widget.current.api.reset(widget.current.id);
+      if (!completed) retryChallenge();
     }
   }
 
@@ -126,7 +193,7 @@ export default function RegistrationForm() {
       <p><strong>Attendance</strong> {MODES[registration.attendance_mode]}</p>
       <p><strong>Event dates</strong> {EVENT_DATES}</p>
       <ul className="list-disc pl-5">{SESSION_TIMES.map((time) => <li key={time}>{time}</li>)}</ul>
-      <p>{FIRST_MIDNIGHT_NOTICE}</p>
+      <p className="text-sm text-slate-600">{FIRST_MIDNIGHT_NOTICE}</p>
       {registration.physical_count > 0 && <div><p>{ARRIVAL}</p><p><strong>Venue</strong> {VENUE}</p></div>}
       {registration.online_count > 0 && <p>{ONLINE_NOTICE}</p>}
       {registration.accommodation_preference === "church" && <p className="rounded-lg bg-amber-50 p-4">{WELFARE_NOTICE}</p>}
@@ -227,9 +294,12 @@ export default function RegistrationForm() {
           </label>
         </Section>
         {siteKey && <div className="max-w-full" ref={challenge} />}
-        {siteKey && <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" onReady={setupChallenge}
-          onError={() => setSecurityError("The security check could not load. Reload this page and try again.")} />}
-        {(!siteKey || securityError) && <p role="alert" className="text-red-800">{securityError || "Registration is temporarily unavailable."}</p>}
+        {(!siteKey || securityError) && <div className="space-y-2">
+          <p role="alert" className="text-red-800">{securityError || "Registration is temporarily unavailable."}</p>
+          {siteKey && <button type="button" className="font-semibold text-fuchsia-800 underline" onClick={retryChallenge}>
+            Retry security check
+          </button>}
+        </div>}
         {error && <p ref={feedback} tabIndex={-1} role="alert" className="rounded-lg bg-red-50 p-3 text-red-800">{error}</p>}
         <button className={button} disabled={!siteKey || busy} type="submit">
           {busy ? "Registering…" : "Register for Camp Meeting"}

@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   const validation = validateWatchHour(body);
   if (!validation.value) return fail(validation.error, 400);
   const value = validation.value;
-  const secret = process.env.TURNSTILE_SECRET_KEY;
+  const secret = process.env.TURNSTILE_SECRET_KEY?.trim();
   const token = body.turnstileToken;
   if (!secret) return fail(unavailable, 503);
   if (typeof token !== "string" || !token || token.length > 2048) {

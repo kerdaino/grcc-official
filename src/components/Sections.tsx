@@ -2,6 +2,7 @@
 // We use placeholders for Blog, Sermons, Events until backend is ready.
 "use client";
 
+import { CHURCH_ADDRESS } from "@/lib/churchLocation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -119,7 +120,7 @@ export function HeroSection() {
               <div className="flex items-center gap-3 md:justify-center">
                 <IconPin />
                 <p className="text-sm">
-                  Behind Make-Up Quarters, Oshola Junction, College Road, Ogba, Lagos, Nigeria.
+                  {CHURCH_ADDRESS}
                 </p>
               </div>
 
@@ -201,7 +202,7 @@ export function WhoWeAreSection() {
 
             <p className="mt-4 text-slate-600 leading-relaxed">
               We are a Christ-centered community of believers, passionate about seeing
-              God's kingdom, power, and glory fill the earth. As a non-denominational
+              God&apos;s kingdom, power, and glory fill the earth. As a non-denominational
               and outreach ministry, we are committed to:
             </p>
 

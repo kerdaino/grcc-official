@@ -1,7 +1,7 @@
 export const WATCH_HOUR_TABLE = "grcc_watch_hour_registrations";
 export const EVENT_NAME = "GRCC December Watch-Hour Camp Meeting 2026";
 export const EVENT_DATES = "1–21 December 2026";
-export const VENUE = "266, Balogun Bus Stop, Along Ope-Ilu Road, Agbado, Ogun State, Nigeria.";
+export { CHURCH_ADDRESS as VENUE } from "./churchLocation";
 export const SESSION_TIMES = ["12:00 AM – 6:00 AM WAT", "12:00 PM – 6:00 PM WAT"];
 export const ARRIVAL = "Arrival is 1 December at 12:00 PM WAT.";
 export const FIRST_MIDNIGHT_NOTICE = "GRCC will confirm the date of the first midnight session.";

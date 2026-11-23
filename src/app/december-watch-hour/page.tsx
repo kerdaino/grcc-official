@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image, { getImageProps } from "next/image";
 import PageHero from "@/components/PageHero";
-import { ARRIVAL, EVENT_DATES, EVENT_NAME, FIRST_MIDNIGHT_NOTICE, SESSION_TIMES, VENUE } from "@/lib/watchHour";
+import { ARRIVAL, EVENT_DATES, EVENT_NAME, SESSION_TIMES, VENUE } from "@/lib/watchHour";
 import RegistrationForm from "./registration-form";
 
 export const metadata: Metadata = { title: EVENT_NAME, description: "Register for Elevated Sight with Gloryrealm Christian Centre." };
@@ -33,7 +33,7 @@ export default function WatchHourPage() {
               <h3 className="font-bold">Daily schedule</h3>
               <p>{SESSION_TIMES[0]}</p>
               <p>{SESSION_TIMES[1]}</p>
-              <p className="mt-2">12 hours daily. {ARRIVAL} {FIRST_MIDNIGHT_NOTICE}</p>
+              <p className="mt-2">{ARRIVAL}</p>
             </div>
             <div>
               <h3 className="font-bold">Venue</h3>
@@ -41,8 +41,10 @@ export default function WatchHourPage() {
             </div>
             <div>
               <h3 className="font-bold">Contact</h3>
-              <a className="block text-fuchsia-800 underline" href="tel:+2347033073014">07033073014</a>
-              <a className="block text-fuchsia-800 underline" href="tel:+2347011780857">07011780857</a>
+              <ul className="mt-1 grid gap-1">
+                <li><a className="inline-flex min-h-11 items-center text-fuchsia-800 underline" href="tel:+2347033073014">07033073014</a></li>
+                <li><a className="inline-flex min-h-11 items-center text-fuchsia-800 underline" href="tel:+2347011780857">07011780857</a></li>
+              </ul>
             </div>
           </div>
           <RegistrationForm />

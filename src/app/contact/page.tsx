@@ -1,5 +1,6 @@
 "use client";
 
+import { CHURCH_ADDRESS } from "@/lib/churchLocation";
 import PageHero from "@/components/PageHero";
 import { useState } from "react";
 
@@ -90,8 +91,7 @@ export default function ContactPage() {
                     <i className="fa-solid fa-location-dot" />
                   </span>
                   <p>
-                    Behind Make-Up Quarters, Oshola Junction, Near Oyemekun Bus Stop,
-                    College Road, Ogba, Lagos, Nigeria.
+                    {CHURCH_ADDRESS}
                   </p>
                 </div>
 
@@ -150,7 +150,7 @@ export default function ContactPage() {
               </p>
 
               <a
-                href="https://www.google.com/maps"
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CHURCH_ADDRESS)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="mt-5 inline-flex items-center gap-2 rounded-lg bg-purple-600 px-5 py-3 text-white font-semibold hover:bg-purple-700"

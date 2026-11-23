@@ -2,6 +2,7 @@
 // Footer layout matching the screenshot: About (logo + socials), Quick Links, Contact, Newsletter, bottom bar links.
 
 "use client";
+import { CHURCH_ADDRESS } from "@/lib/churchLocation";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -98,7 +99,7 @@ function handleSubscribe() {
                 <span className="mt-0.5 text-teal-400">
                   <i className="fa-solid fa-location-dot" />
                 </span>
-                <p>Behind Make-Up Quarters, Oshola Junction, Near Oyemekun Bus Stop, College Road, Ogba, Lagos, Nigeria.</p>
+                <p>{CHURCH_ADDRESS}</p>
               </div>
 
               <div className="flex items-center gap-3">
